@@ -193,7 +193,12 @@ public class quadScript : MonoBehaviour {
 
     public void march(Texture2D texture)
     {
+        //Points go in opposite of desired direction
         float thresh = 0.5f;
+        meshScript mscript = GameObject.Find("GameObjectMesh").GetComponent<meshScript>();
+        
+        List<Vector3> vertices = new List<Vector3>();
+        List<int> indices = new List<int>();
 
         for (int i = 0; i < _squares.Length; i++)
         {
@@ -248,40 +253,30 @@ public class quadScript : MonoBehaviour {
                 points[pos] = vec;
                 pos++;
             }
-            
-            List<Vector3> vertices = new List<Vector3>();
-            List<int> indices = new List<int>();
-            
-            meshScript mscript = GameObject.Find("GameObjectMesh").GetComponent<meshScript>();
 
-            if (points.Length == 2)
+            if (points[3] == new Vector3(0,0,0))
             {
                 vertices.Add(points[0]);
                 vertices.Add(points[1]);
-                vertices.Add(new Vector3(0.5f, 0f, 0));
-                vertices.Add(new Vector3(0f, 0.5f, 0));
-                indices.Add(0);
-                indices.Add(1);
-                indices.Add(2);
-                indices.Add(3);
-                mscript.createMeshGeometry(vertices, indices);
+                int vert = vertices.Count;
+                indices.Add(vert-2);
+                indices.Add(vert-1);
             }
-            else if (points.Length == 4)
+            else if (points[3] != new Vector3(0,0,0))
             {
                 vertices.Add(points[0]);
                 vertices.Add(points[1]);
                 vertices.Add(points[2]);
                 vertices.Add(points[3]);
-                indices.Add(0);
-                indices.Add(1);
-                indices.Add(2);
-                indices.Add(3);
-                mscript.createMeshGeometry(vertices, indices);
-                
+                int vert = vertices.Count;
+                indices.Add(vert-4);
+                indices.Add(vert-3);
+                indices.Add(vert-2);
+                indices.Add(vert-1);
             }
             
-
         }
+        mscript.createMeshGeometry(vertices, indices);
     }
 
 }
