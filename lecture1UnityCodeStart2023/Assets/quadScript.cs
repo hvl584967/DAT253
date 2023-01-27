@@ -20,8 +20,8 @@ public class quadScript : MonoBehaviour {
     private int _sliderX = 256;
     private int _sliderY = 256;
     private float _size = 0.5f;
-    private Vector3[][] _squares = new Vector3[1024][];
-    private bool[][] _onOff = new bool[1024][];
+    private Vector3[][] _squares = new Vector3[16384][];
+    private bool[][] _onOff = new bool[16384][];
     private bool _click = false;
 
     // Use this for initialization
@@ -33,15 +33,36 @@ public class quadScript : MonoBehaviour {
 
         int spot = 0;
         int spacing = 16;
+        int low = spacing - (spacing / 4);
+        int high = spacing / 4;
         
-        for (int y = (-256 + spacing); y <= 256; y+=spacing)
+        List<Vector3> vertices = new List<Vector3>();
+        List<int> indices = new List<int>();
+
+        for (int y = (0 + spacing); y <= 512; y+=spacing)
         {
-            for (int x = (-256 + spacing); x <= 256; x+=spacing)
+            for (int x = (0 + spacing); x <= 512; x+=spacing)
             {
-                Vector3 vec1 = new Vector3(x - (spacing/4), y - (spacing/4),0);
-                Vector3 vec2 = new Vector3(x - (spacing/4), y - (spacing/2),0);
-                Vector3 vec3 = new Vector3(x - (spacing/2), y - (spacing/4),0);
-                Vector3 vec4 = new Vector3(x - (spacing/2), y - (spacing/2),0);
+                Vector3 vec1 = new Vector3(((x - low)-256f)/512f, ((y - low)-256f)/512f,0);
+                Vector3 vec2 = new Vector3(((x - low)-256f)/512f, ((y - high)-256f)/512f,0);
+                Vector3 vec3 = new Vector3(((x - high)-256f)/512f, ((y - low)-256f)/512f,0);
+                Vector3 vec4 = new Vector3(((x - high)-256f)/512f, ((y - high)-256f)/512f,0);
+                vertices.Add(vec1);
+                vertices.Add(vec2);
+                vertices.Add(vec3);
+                vertices.Add(vec4);
+                vertices.Add(vec1);
+                vertices.Add(vec3);
+                vertices.Add(vec2);
+                vertices.Add(vec4);
+                indices.Add(vertices.Count-8);
+                indices.Add(vertices.Count-7);
+                indices.Add(vertices.Count-6);
+                indices.Add(vertices.Count-5);
+                indices.Add(vertices.Count-4);
+                indices.Add(vertices.Count-3);
+                indices.Add(vertices.Count-2);
+                indices.Add(vertices.Count-1);
                 Vector3[] arr = new Vector3[4];
                 arr[0] = vec1;
                 arr[1] = vec2;
@@ -63,6 +84,7 @@ public class quadScript : MonoBehaviour {
 
         //  gets the mesh object and uses it to create a diagonal line
         meshScript mscript = GameObject.Find("GameObjectMesh").GetComponent<meshScript>();
+        /*
         List<Vector3> vertices = new List<Vector3>();
         List<int> indices = new List<int>();
         
@@ -70,7 +92,7 @@ public class quadScript : MonoBehaviour {
         vertices.Add(new Vector3(0.5f,0.5f,0));
         indices.Add(0);
         indices.Add(1);
-        
+        */
         mscript.createMeshGeometry(vertices, indices);
     }
 
@@ -193,7 +215,7 @@ public class quadScript : MonoBehaviour {
 
     public void march(Texture2D texture)
     {
-        float thresh = 0.25f;
+        float thresh = 1f;
         meshScript mscript = GameObject.Find("GameObjectMesh").GetComponent<meshScript>();
         
         List<Vector3> vertices = new List<Vector3>();
@@ -203,7 +225,8 @@ public class quadScript : MonoBehaviour {
         {
             for (int j = 0; j < _squares[0].Length; j++)
             {
-                if (texture.GetPixel((int)_squares[i][j].x, (int)_squares[i][j].y).r-0.5f < thresh)
+                
+                if (texture.GetPixel((int)((_squares[i][j].x*512)+256), (int)((_squares[i][j].y*512)+256)).r < thresh)
                 {
                     _onOff[i][j] = true;
                 }
@@ -227,33 +250,33 @@ public class quadScript : MonoBehaviour {
 
             if (b1 != b3)
             {
-                Vector3 vec = new Vector3(((p1.x + p3.x)/2)/512,p3.y/512,0);
+                Vector3 vec = new Vector3((p1.x + p3.x)/2,p3.y,0);
                 points[pos] = vec;
                 pos++;
             }
 
             if (b1 != b2)
             {
-                Vector3 vec = new Vector3(p2.x/512,((p2.y + p1.y)/2)/512,0);
+                Vector3 vec = new Vector3(p2.x,(p2.y + p1.y)/2,0);
                 points[pos] = vec;
                 pos++;
             }
             
             if (b2 != b4)
             {
-                Vector3 vec = new Vector3(((p2.x+p4.x)/2)/512,p4.y/512,0);
+                Vector3 vec = new Vector3((p2.x+p4.x)/2,p4.y,0);
                 points[pos] = vec;
                 pos++;
             }
             
             if (b3 != b4)
             {
-                Vector3 vec = new Vector3(p4.x/512,((p4.y + p3.y)/2)/512,0);
+                Vector3 vec = new Vector3(p4.x,(p4.y + p3.y)/2,0);
                 points[pos] = vec;
                 pos++;
             }
 
-            if (points[3] == new Vector3(0,0,0))
+            if (points[0] != new Vector3(0,0,0) && points[3] == new Vector3(0,0,0))
             {
                 vertices.Add(points[0]);
                 vertices.Add(points[1]);
