@@ -193,8 +193,7 @@ public class quadScript : MonoBehaviour {
 
     public void march(Texture2D texture)
     {
-        //Points go in opposite of desired direction
-        float thresh = 0.5f;
+        float thresh = 0.25f;
         meshScript mscript = GameObject.Find("GameObjectMesh").GetComponent<meshScript>();
         
         List<Vector3> vertices = new List<Vector3>();
@@ -204,7 +203,7 @@ public class quadScript : MonoBehaviour {
         {
             for (int j = 0; j < _squares[0].Length; j++)
             {
-                if (texture.GetPixel((int)_squares[i][j].x, (int)_squares[i][j].y).r > thresh)
+                if (texture.GetPixel((int)_squares[i][j].x, (int)_squares[i][j].y).r-0.5f < thresh)
                 {
                     _onOff[i][j] = true;
                 }
