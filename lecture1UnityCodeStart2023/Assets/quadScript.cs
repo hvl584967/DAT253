@@ -20,8 +20,8 @@ public class quadScript : MonoBehaviour {
     private int _sliderX = 256;
     private int _sliderY = 256;
     private float _size = 0.5f;
-    private Vector3[][] _squares = new Vector3[16384][];
-    private bool[][] _onOff = new bool[16384][];
+    private List<List<Vector3>> _squares = new List<List<Vector3>>();
+    private List<List<bool>> _onOff = new List<List<bool>>();
     private bool _click = false;
 
     // Use this for initialization
@@ -30,18 +30,17 @@ public class quadScript : MonoBehaviour {
         Slice.initDicom();
 
         string dicomfilepath = Application.dataPath + @"\..\dicomdata\"; // Application.dataPath is in the assets folder, but these files are "managed", so we go one level up
-
-        int spot = 0;
-        int spacing = 16;
+        
+        int spacing = 4;
         int low = spacing - (spacing / 4);
         int high = spacing / 4;
         
         List<Vector3> vertices = new List<Vector3>();
         List<int> indices = new List<int>();
 
-        for (int y = (0 + spacing); y <= 512; y+=spacing)
+        for (int y = (0 + spacing); y <= 512; y+=(spacing/2))
         {
-            for (int x = (0 + spacing); x <= 512; x+=spacing)
+            for (int x = (0 + spacing); x <= 512; x+=(spacing/2))
             {
                 Vector3 vec1 = new Vector3(((x - low)-256f)/512f, ((y - low)-256f)/512f,0);
                 Vector3 vec2 = new Vector3(((x - low)-256f)/512f, ((y - high)-256f)/512f,0);
@@ -63,19 +62,18 @@ public class quadScript : MonoBehaviour {
                 indices.Add(vertices.Count-3);
                 indices.Add(vertices.Count-2);
                 indices.Add(vertices.Count-1);
-                Vector3[] arr = new Vector3[4];
-                arr[0] = vec1;
-                arr[1] = vec2;
-                arr[2] = vec3;
-                arr[3] = vec4;
-                bool[] bools = new bool[4];
-                bools[0] = false;
-                bools[1] = false;
-                bools[2] = false;
-                bools[3] = false;
-                _squares[spot] = arr;
-                _onOff[spot] = bools;
-                spot++;
+                List<Vector3> arr = new List<Vector3>();
+                arr.Add(vec1);
+                arr.Add(vec2);
+                arr.Add(vec3);
+                arr.Add(vec4);
+                List<bool> bools = new List<bool>();
+                bools.Add(false);
+                bools.Add(false);
+                bools.Add(false);
+                bools.Add(false);
+                _squares.Add(arr);
+                _onOff.Add(bools);
             }
         }
 
@@ -215,15 +213,15 @@ public class quadScript : MonoBehaviour {
 
     public void march(Texture2D texture)
     {
-        float thresh = 1f;
+        float thresh = 0.5f;
         meshScript mscript = GameObject.Find("GameObjectMesh").GetComponent<meshScript>();
         
         List<Vector3> vertices = new List<Vector3>();
         List<int> indices = new List<int>();
 
-        for (int i = 0; i < _squares.Length; i++)
+        for (int i = 0; i < _squares.Count; i++)
         {
-            for (int j = 0; j < _squares[0].Length; j++)
+            for (int j = 0; j < _squares[0].Count; j++)
             {
                 
                 if (texture.GetPixel((int)((_squares[i][j].x*512)+256), (int)((_squares[i][j].y*512)+256)).r < thresh)
@@ -242,61 +240,55 @@ public class quadScript : MonoBehaviour {
             bool b3 = _onOff[i][2];
             bool b4 = _onOff[i][3];
 
-            Vector3[] points = new Vector3[4];
-            int pos = 0;
-            
+            List<Vector3> points = new List<Vector3>();
+
             //p2 p4
             //p1 p3
-
             if (b1 != b3)
             {
-                Vector3 vec = new Vector3((p1.x + p3.x)/2,p3.y,0);
-                points[pos] = vec;
-                pos++;
+                Vector3 vec = new Vector3((p1.x + p3.x) / 2, p3.y, 0);
+                points.Add(vec);
             }
 
             if (b1 != b2)
             {
-                Vector3 vec = new Vector3(p2.x,(p2.y + p1.y)/2,0);
-                points[pos] = vec;
-                pos++;
-            }
-            
-            if (b2 != b4)
-            {
-                Vector3 vec = new Vector3((p2.x+p4.x)/2,p4.y,0);
-                points[pos] = vec;
-                pos++;
-            }
-            
-            if (b3 != b4)
-            {
-                Vector3 vec = new Vector3(p4.x,(p4.y + p3.y)/2,0);
-                points[pos] = vec;
-                pos++;
+                Vector3 vec = new Vector3(p2.x, (p2.y + p1.y) / 2, 0);
+                points.Add(vec);
             }
 
-            if (points[0] != new Vector3(0,0,0) && points[3] == new Vector3(0,0,0))
+            if (b2 != b4)
+            {
+                Vector3 vec = new Vector3((p2.x + p4.x) / 2, p4.y, 0);
+                points.Add(vec);
+            }
+
+            if (b3 != b4)
+            {
+                Vector3 vec = new Vector3(p4.x, (p4.y + p3.y) / 2, 0);
+                points.Add(vec);
+            }
+
+            if (points.Count() == 2)
             {
                 vertices.Add(points[0]);
                 vertices.Add(points[1]);
                 int vert = vertices.Count;
-                indices.Add(vert-2);
-                indices.Add(vert-1);
+                indices.Add(vert - 2);
+                indices.Add(vert - 1);
             }
-            else if (points[3] != new Vector3(0,0,0))
+            else if (points.Count > 2)
             {
                 vertices.Add(points[0]);
                 vertices.Add(points[1]);
                 vertices.Add(points[2]);
                 vertices.Add(points[3]);
                 int vert = vertices.Count;
-                indices.Add(vert-4);
-                indices.Add(vert-3);
-                indices.Add(vert-2);
-                indices.Add(vert-1);
+                indices.Add(vert - 4);
+                indices.Add(vert - 3);
+                indices.Add(vert - 2);
+                indices.Add(vert - 1);
             }
-            
+
         }
         mscript.createMeshGeometry(vertices, indices);
     }
