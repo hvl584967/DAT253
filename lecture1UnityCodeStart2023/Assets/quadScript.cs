@@ -221,19 +221,28 @@ public class quadScript : MonoBehaviour {
 
         for (int i = 0; i < _squares.Count; i++)
         {
+            float[] colors = new float[4];
+            int k = 0;
             for (int j = 0; j < _squares[0].Count; j++)
             {
-                
-                if (texture.GetPixel((int)((_squares[i][j].x*512)+256), (int)((_squares[i][j].y*512)+256)).r < thresh)
+                colors[k] = texture.GetPixel((int) ((_squares[i][j].x * 512) + 256),
+                    (int) ((_squares[i][j].y * 512) + 256)).r;
+                if (colors[k] < thresh)
                 {
                     _onOff[i][j] = true;
                 }
+                k++;
             }
-
+            
             Vector3 p1 = _squares[i][0];
             Vector3 p2 = _squares[i][1];
             Vector3 p3 = _squares[i][2];
             Vector3 p4 = _squares[i][3];
+
+            float c1 = colors[0];
+            float c2 = colors[1];
+            float c3 = colors[2];
+            float c4 = colors[3];
 
             bool b1 = _onOff[i][0];
             bool b2 = _onOff[i][1];
@@ -246,26 +255,60 @@ public class quadScript : MonoBehaviour {
             //p1 p3
             if (b1 != b3)
             {
-                Vector3 vec = new Vector3((p1.x + p3.x) / 2, p3.y, 0);
-                points.Add(vec);
+                if (b1)
+                {
+                    Vector3 vec = new Vector3(((p1.x + p3.x) / 2)*c1, p3.y, 0);
+                    points.Add(vec);
+                }
+                else
+                {
+                    Vector3 vec = new Vector3(((p1.x + p3.x) / 2)*c3, p3.y, 0);
+                    print("vec" + vec);
+                    points.Add(vec);
+                }
             }
 
             if (b1 != b2)
             {
-                Vector3 vec = new Vector3(p2.x, (p2.y + p1.y) / 2, 0);
-                points.Add(vec);
+                if (b1)
+                {
+                    Vector3 vec = new Vector3(p2.x, ((p2.y + p1.y) / 2)*c1, 0);
+                    points.Add(vec);
+                }
+                else
+                {
+                    Vector3 vec = new Vector3(p2.x, ((p2.y + p1.y) / 2)*c2, 0);
+                    points.Add(vec);
+                }
             }
 
             if (b2 != b4)
             {
-                Vector3 vec = new Vector3((p2.x + p4.x) / 2, p4.y, 0);
-                points.Add(vec);
+                if (b2)
+                {
+                    Vector3 vec = new Vector3(((p2.x + p4.x) / 2)*c2, p4.y, 0);
+                    points.Add(vec);
+                }
+                else
+                {
+                    Vector3 vec = new Vector3(((p2.x + p4.x) / 2)*c4, p4.y, 0);
+                    points.Add(vec);
+                }
             }
 
             if (b3 != b4)
             {
-                Vector3 vec = new Vector3(p4.x, (p4.y + p3.y) / 2, 0);
-                points.Add(vec);
+                if (b3)
+                {
+                    Vector3 vec = new Vector3(p4.x, ((p4.y + p3.y) / 2)*c3, 0);
+                    points.Add(vec);
+                }
+                else
+                {
+                    Vector3 vec = new Vector3(p4.x, ((p4.y + p3.y) / 2)*c4, 0);
+                    points.Add(vec);
+                }
+                
             }
 
             if (points.Count() == 2)
