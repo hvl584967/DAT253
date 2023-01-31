@@ -255,60 +255,33 @@ public class quadScript : MonoBehaviour {
             //p1 p3
             if (b1 != b3)
             {
-                if (b1)
-                {
-                    Vector3 vec = new Vector3(((p1.x + p3.x) / 2)*c1, p3.y, 0);
-                    points.Add(vec);
-                }
-                else
-                {
-                    Vector3 vec = new Vector3(((p1.x + p3.x) / 2)*c3, p3.y, 0);
-                    print("vec" + vec);
-                    points.Add(vec);
-                }
+                Vector3 vec = new Vector3(((p1.x + p3.x) / 2), p3.y, 0);
+                points.Add(vec);
+                
             }
 
             if (b1 != b2)
             {
-                if (b1)
-                {
-                    Vector3 vec = new Vector3(p2.x, ((p2.y + p1.y) / 2)*c1, 0);
-                    points.Add(vec);
-                }
-                else
-                {
-                    Vector3 vec = new Vector3(p2.x, ((p2.y + p1.y) / 2)*c2, 0);
-                    points.Add(vec);
-                }
+                Vector3 vec = new Vector3(p2.x, ((p2.y + p1.y) / 2), 0);
+                points.Add(vec);
             }
 
-            if (b2 != b4)
+            if (b2 != b3)
             {
-                if (b2)
-                {
-                    Vector3 vec = new Vector3(((p2.x + p4.x) / 2)*c2, p4.y, 0);
-                    points.Add(vec);
-                }
-                else
-                {
-                    Vector3 vec = new Vector3(((p2.x + p4.x) / 2)*c4, p4.y, 0);
-                    points.Add(vec);
-                }
+                Vector3 vec = new Vector3(((p2.x + p4.x) / 2), (p2.x + p4.y)/2, 0);
+                points.Add(vec);
             }
 
             if (b3 != b4)
             {
-                if (b3)
-                {
-                    Vector3 vec = new Vector3(p4.x, ((p4.y + p3.y) / 2)*c3, 0);
-                    points.Add(vec);
-                }
-                else
-                {
-                    Vector3 vec = new Vector3(p4.x, ((p4.y + p3.y) / 2)*c4, 0);
-                    points.Add(vec);
-                }
-                
+                Vector3 vec = new Vector3(p4.x, ((p4.y + p3.y) / 2), 0);
+                points.Add(vec);
+            }
+
+            if (b2 != b4)
+            {
+                Vector3 vec = new Vector3(p4.x, ((p4.y + p3.y) / 2), 0);
+                points.Add(vec);
             }
 
             if (points.Count() == 2)
