@@ -23,6 +23,7 @@ public class quadScript : MonoBehaviour {
     private List<List<Vector3>> _squares = new List<List<Vector3>>();
     private List<List<bool>> _onOff = new List<List<bool>>();
     private bool _click = false;
+    private bool _clickTri = false;
 
     // Use this for initialization
     void Start () {
@@ -154,6 +155,10 @@ public class quadScript : MonoBehaviour {
         {
             march(texture);
             _click = false;
+        }else if (_clickTri)
+        {
+            marchingTriangles(texture);
+            _clickTri = false;
         }
 
         texture.filterMode = FilterMode.Point;  // nearest neigbor interpolation is used.  (alternative is FilterMode.Bilinear)
@@ -208,6 +213,8 @@ public class quadScript : MonoBehaviour {
 
     public void button2Pushed()
     {
+        _clickTri = true;
+        setTexture(_slices[0]);
         print("button2Pushed"); 
     }
 
@@ -255,32 +262,26 @@ public class quadScript : MonoBehaviour {
             //p1 p3
             if (b1 != b3)
             {
-                Vector3 vec = new Vector3(((p1.x + p3.x) / 2), p3.y, 0);
+                Vector3 vec = new Vector3((p1.x + p3.x) / 2, p3.y, 0);
                 points.Add(vec);
                 
             }
 
             if (b1 != b2)
             {
-                Vector3 vec = new Vector3(p2.x, ((p2.y + p1.y) / 2), 0);
-                points.Add(vec);
-            }
-
-            if (b2 != b3)
-            {
-                Vector3 vec = new Vector3(((p2.x + p4.x) / 2), (p2.x + p4.y)/2, 0);
+                Vector3 vec = new Vector3(p2.x, (p2.y + p1.y) / 2, 0);
                 points.Add(vec);
             }
 
             if (b3 != b4)
             {
-                Vector3 vec = new Vector3(p4.x, ((p4.y + p3.y) / 2), 0);
+                Vector3 vec = new Vector3(p4.x, (p4.y + p3.y) / 2, 0);
                 points.Add(vec);
             }
 
             if (b2 != b4)
             {
-                Vector3 vec = new Vector3(p4.x, ((p4.y + p3.y) / 2), 0);
+                Vector3 vec = new Vector3((p4.x + p2.x) / 2, p4.y, 0);
                 points.Add(vec);
             }
 
@@ -301,6 +302,104 @@ public class quadScript : MonoBehaviour {
                 int vert = vertices.Count;
                 indices.Add(vert - 4);
                 indices.Add(vert - 3);
+                indices.Add(vert - 2);
+                indices.Add(vert - 1);
+            }
+
+        }
+        mscript.createMeshGeometry(vertices, indices);
+    }
+    
+    private void marchingTriangles(Texture2D tex)
+    {
+
+        List<List<bool>> onOff = new List<List<bool>>();
+        List<List<Vector3>> triangles = new List<List<Vector3>>();
+        for (int k = 0; k < _squares.Count; k++)
+        {
+            List<Vector3> triangle = new List<Vector3>();
+            triangle.Add(_squares[k][0]);
+            triangle.Add(_squares[k][1]);
+            triangle.Add(_squares[k][2]);
+            List<bool> f = new List<bool>();
+            f.Add(false);
+            f.Add(false);
+            f.Add(false);
+            List<Vector3> triangle2 = new List<Vector3>();
+            triangle2.Add(_squares[k][1]);
+            triangle2.Add(_squares[k][2]);
+            triangle2.Add(_squares[k][3]);
+            List<bool> f2 = new List<bool>();
+            f.Add(false);
+            f.Add(false);
+            f.Add(false);
+            triangles.Add(triangle);
+            triangles.Add(triangle2);
+            onOff.Add(f);
+            onOff.Add(f2);
+        }
+        
+        float thresh = 0.5f;
+        meshScript mscript = GameObject.Find("GameObjectMesh").GetComponent<meshScript>();
+        
+        List<Vector3> vertices = new List<Vector3>();
+        List<int> indices = new List<int>();
+
+        for (int i = 0; i < triangles.Count; i++)
+        {
+            float[] colors = new float[3];
+            int k = 0;
+            for (int j = 0; j < triangles[0].Count; j++)
+            {
+                colors[k] = tex.GetPixel((int) ((triangles[i][j].x * 512) + 256),
+                    (int) ((triangles[i][j].y * 512) + 256)).r;
+                if (colors[k] < thresh)
+                {
+                    onOff[i][j] = true;
+                }
+                k++;
+            }
+            
+            Vector3 p1 = _squares[i][0];
+            Vector3 p2 = _squares[i][1];
+            Vector3 p3 = _squares[i][2];
+
+            float c1 = colors[0];
+            float c2 = colors[1];
+            float c3 = colors[2];
+
+            bool b1 = onOff[i][0];
+            bool b2 = onOff[i][1];
+            bool b3 = onOff[i][2];
+
+            List<Vector3> points = new List<Vector3>();
+
+            //p2
+            //p1 p3
+            if (b1 != b3)
+            {
+                Vector3 vec = new Vector3((p1.x + p3.x) / 2, p3.y, 0);
+                points.Add(vec);
+                
+            }
+
+            if (b1 != b2)
+            {
+                Vector3 vec = new Vector3(p2.x, (p2.y + p1.y) / 2, 0);
+                points.Add(vec);
+            }
+
+            if (b2 != b3)
+            {
+                Vector3 vec = new Vector3((p2.x + p3.x) / 2, (p2.y + p3.y) / 2, 0);
+                points.Add(vec);
+            }
+
+            if (points.Count() == 2)
+            {
+                vertices.Add(points[0]);
+                vertices.Add(points[1]);
+                int vert = vertices.Count;
                 indices.Add(vert - 2);
                 indices.Add(vert - 1);
             }
