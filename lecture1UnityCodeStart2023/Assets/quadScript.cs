@@ -47,7 +47,7 @@ public class quadScript : MonoBehaviour {
                 Vector3 vec2 = new Vector3(((x - low)-256f)/512f, ((y - high)-256f)/512f,0);
                 Vector3 vec3 = new Vector3(((x - high)-256f)/512f, ((y - low)-256f)/512f,0);
                 Vector3 vec4 = new Vector3(((x - high)-256f)/512f, ((y - high)-256f)/512f,0);
-                vertices.Add(vec1);
+               /* vertices.Add(vec1);
                 vertices.Add(vec2);
                 vertices.Add(vec3);
                 vertices.Add(vec4);
@@ -62,7 +62,7 @@ public class quadScript : MonoBehaviour {
                 indices.Add(vertices.Count-4);
                 indices.Add(vertices.Count-3);
                 indices.Add(vertices.Count-2);
-                indices.Add(vertices.Count-1);
+                indices.Add(vertices.Count-1);*/
                 List<Vector3> arr = new List<Vector3>();
                 arr.Add(vec1);
                 arr.Add(vec2);
