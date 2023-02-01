@@ -330,9 +330,9 @@ public class quadScript : MonoBehaviour {
             triangle2.Add(_squares[k][2]);
             triangle2.Add(_squares[k][3]);
             List<bool> f2 = new List<bool>();
-            f.Add(false);
-            f.Add(false);
-            f.Add(false);
+            f2.Add(false);
+            f2.Add(false);
+            f2.Add(false);
             triangles.Add(triangle);
             triangles.Add(triangle2);
             onOff.Add(f);
@@ -360,9 +360,9 @@ public class quadScript : MonoBehaviour {
                 k++;
             }
             
-            Vector3 p1 = _squares[i][0];
-            Vector3 p2 = _squares[i][1];
-            Vector3 p3 = _squares[i][2];
+            Vector3 p1 = triangles[i][0];
+            Vector3 p2 = triangles[i][1];
+            Vector3 p3 = triangles[i][2];
 
             float c1 = colors[0];
             float c2 = colors[1];
