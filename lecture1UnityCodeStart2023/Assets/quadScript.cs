@@ -22,6 +22,8 @@ public class quadScript : MonoBehaviour {
     private float _size = 0.5f;
     private List<List<Vector3>> _squares = new List<List<Vector3>>();
     private List<List<bool>> _onOff = new List<List<bool>>();
+    private List<List<Vector3>> _triangles = new List<List<Vector3>>();
+    private List<List<bool>> _onOff2 = new List<List<bool>>();
     private bool _click = false;
     private bool _clickTri = false;
 
@@ -32,22 +34,70 @@ public class quadScript : MonoBehaviour {
 
         string dicomfilepath = Application.dataPath + @"\..\dicomdata\"; // Application.dataPath is in the assets folder, but these files are "managed", so we go one level up
         
-        int spacing = 4;
+        int spacing = 16;
         int low = spacing - (spacing / 4);
         int high = spacing / 4;
+        float negate = 256f;
+        float adjust = 512f;
         
         List<Vector3> vertices = new List<Vector3>();
         List<int> indices = new List<int>();
 
-        for (int y = (0 + spacing); y <= 512; y+=(spacing/2))
+        for (int y = spacing/2; y <= 512+spacing/2; y+=(spacing/2))
         {
-            for (int x = (0 + spacing); x <= 512; x+=(spacing/2))
+            for (int x = spacing/2; x <= 512+spacing/2; x+=(spacing/2))
             {
-                Vector3 vec1 = new Vector3(((x - low)-256f)/512f, ((y - low)-256f)/512f,0);
-                Vector3 vec2 = new Vector3(((x - low)-256f)/512f, ((y - high)-256f)/512f,0);
-                Vector3 vec3 = new Vector3(((x - high)-256f)/512f, ((y - low)-256f)/512f,0);
-                Vector3 vec4 = new Vector3(((x - high)-256f)/512f, ((y - high)-256f)/512f,0);
-               /* vertices.Add(vec1);
+                Vector3 vec1 = new Vector3(((x - low)-negate)/adjust, ((y - low)-negate)/adjust,0);
+                Vector3 vec2 = new Vector3(((x - low)-negate)/adjust, ((y - high)-negate)/adjust,0);
+                Vector3 vec3 = new Vector3(((x - high)-negate)/adjust, ((y - low)-negate)/adjust,0);
+                Vector3 vec4 = new Vector3(((x - high)-negate)/adjust, ((y - high)-negate)/adjust,0);
+                
+                List<Vector3> arr = new List<Vector3>();
+                arr.Add(vec1);
+                arr.Add(vec2);
+                arr.Add(vec3);
+                arr.Add(vec4);
+                List<bool> bools = new List<bool>();
+                bools.Add(false);
+                bools.Add(false);
+                bools.Add(false);
+                bools.Add(false);
+                _squares.Add(arr);
+                _onOff.Add(bools);
+                
+                //    vec7/8    vec10
+                //
+                //vec5   vec6/9
+                Vector3 vec5 = new Vector3(((x - spacing/2)-negate)/adjust,((y-spacing/2)-negate)/adjust,0);
+                Vector3 vec6 = new Vector3((x - (spacing/2)-negate)/adjust,((y-spacing/2)-negate)/adjust,0);
+                Vector3 vec7 = new Vector3(((x - spacing)-negate)/adjust,(y-negate)/adjust,0);
+                
+                Vector3 vec10 = new Vector3(((x + spacing/2)-negate)/adjust,(y-negate)/adjust,0);
+
+                List<Vector3> tri = new List<Vector3>();
+                tri.Add(vec5);
+                tri.Add(vec6);
+                tri.Add(vec7);
+                List<Vector3> tri2 = new List<Vector3>();
+                tri2.Add(vec7);
+                tri2.Add(vec6);
+                tri2.Add(vec10);
+                _triangles.Add(tri);
+                _triangles.Add(tri2);
+
+                List<bool> b = new List<bool>();
+                b.Add(false);
+                b.Add(false);
+                b.Add(false);
+                List<bool> b2 = new List<bool>();
+                b2.Add(false);
+                b2.Add(false);
+                b2.Add(false);
+                _onOff2.Add(b);
+                _onOff2.Add(b2);
+
+                //Draw squares
+                /*vertices.Add(vec1);
                 vertices.Add(vec2);
                 vertices.Add(vec3);
                 vertices.Add(vec4);
@@ -63,18 +113,28 @@ public class quadScript : MonoBehaviour {
                 indices.Add(vertices.Count-3);
                 indices.Add(vertices.Count-2);
                 indices.Add(vertices.Count-1);*/
-                List<Vector3> arr = new List<Vector3>();
-                arr.Add(vec1);
-                arr.Add(vec2);
-                arr.Add(vec3);
-                arr.Add(vec4);
-                List<bool> bools = new List<bool>();
-                bools.Add(false);
-                bools.Add(false);
-                bools.Add(false);
-                bools.Add(false);
-                _squares.Add(arr);
-                _onOff.Add(bools);
+                
+                //Draw triangles
+                vertices.Add(vec5);
+                vertices.Add(vec6);
+                vertices.Add(vec5);
+                vertices.Add(vec7);
+                vertices.Add(vec6);
+                vertices.Add(vec7);
+                vertices.Add(vec7);
+                vertices.Add(vec10);
+                vertices.Add(vec6);
+                vertices.Add(vec10);
+                indices.Add(vertices.Count-10);
+                indices.Add(vertices.Count-9);
+                indices.Add(vertices.Count-8);
+                indices.Add(vertices.Count-7);
+                indices.Add(vertices.Count-6);
+                indices.Add(vertices.Count-5);
+                indices.Add(vertices.Count-4);
+                indices.Add(vertices.Count-3);
+                indices.Add(vertices.Count-2);
+                indices.Add(vertices.Count-1);
             }
         }
 
@@ -313,64 +373,38 @@ public class quadScript : MonoBehaviour {
     private void marchingTriangles(Texture2D tex)
     {
 
-        List<List<bool>> onOff = new List<List<bool>>();
-        List<List<Vector3>> triangles = new List<List<Vector3>>();
-        for (int k = 0; k < _squares.Count; k++)
-        {
-            List<Vector3> triangle = new List<Vector3>();
-            triangle.Add(_squares[k][0]);
-            triangle.Add(_squares[k][1]);
-            triangle.Add(_squares[k][2]);
-            List<bool> f = new List<bool>();
-            f.Add(false);
-            f.Add(false);
-            f.Add(false);
-            List<Vector3> triangle2 = new List<Vector3>();
-            triangle2.Add(_squares[k][1]);
-            triangle2.Add(_squares[k][2]);
-            triangle2.Add(_squares[k][3]);
-            List<bool> f2 = new List<bool>();
-            f2.Add(false);
-            f2.Add(false);
-            f2.Add(false);
-            triangles.Add(triangle);
-            triangles.Add(triangle2);
-            onOff.Add(f);
-            onOff.Add(f2);
-        }
-        
         float thresh = 0.5f;
         meshScript mscript = GameObject.Find("GameObjectMesh").GetComponent<meshScript>();
         
         List<Vector3> vertices = new List<Vector3>();
         List<int> indices = new List<int>();
 
-        for (int i = 0; i < triangles.Count; i++)
+        for (int i = 0; i < _triangles.Count; i++)
         {
             float[] colors = new float[3];
             int k = 0;
-            for (int j = 0; j < triangles[0].Count; j++)
+            for (int j = 0; j < _triangles[0].Count; j++)
             {
-                colors[k] = tex.GetPixel((int) ((triangles[i][j].x * 512) + 256),
-                    (int) ((triangles[i][j].y * 512) + 256)).r;
+                colors[k] = tex.GetPixel((int) ((_triangles[i][j].x * 512) + 256),
+                    (int) ((_triangles[i][j].y * 512) + 256)).r;
                 if (colors[k] < thresh)
                 {
-                    onOff[i][j] = true;
+                    _onOff2[i][j] = true;
                 }
                 k++;
             }
             
-            Vector3 p1 = triangles[i][0];
-            Vector3 p2 = triangles[i][1];
-            Vector3 p3 = triangles[i][2];
+            Vector3 p1 = _triangles[i][0];
+            Vector3 p2 = _triangles[i][1];
+            Vector3 p3 = _triangles[i][2];
 
             float c1 = colors[0];
             float c2 = colors[1];
             float c3 = colors[2];
 
-            bool b1 = onOff[i][0];
-            bool b2 = onOff[i][1];
-            bool b3 = onOff[i][2];
+            bool b1 = _onOff2[i][0];
+            bool b2 = _onOff2[i][1];
+            bool b3 = _onOff2[i][2];
 
             List<Vector3> points = new List<Vector3>();
 
