@@ -68,11 +68,12 @@ public class quadScript : MonoBehaviour {
                 //    vec7/8    vec10
                 //
                 //vec5   vec6/9
-                Vector3 vec5 = new Vector3(((x - spacing/2)-negate)/adjust,((y-spacing/2)-negate)/adjust,0);
-                Vector3 vec6 = new Vector3((x - (spacing/2)-negate)/adjust,((y-spacing/2)-negate)/adjust,0);
-                Vector3 vec7 = new Vector3(((x - spacing)-negate)/adjust,(y-negate)/adjust,0);
+                Vector3 vec5 = new Vector3(((x - spacing)-negate)/adjust,((y-spacing/2)-negate)/adjust,0);
+                Vector3 vec6 = new Vector3((x-negate)/adjust,((y-spacing/2)-negate)/adjust,0);
+                float y2 = (Mathf.Sqrt(3 * (vec5.x + vec6.x) / 2) / 2);
+                Vector3 vec7 = new Vector3(((vec5.x+vec6.x)/2-negate)/adjust,(y2-negate)/adjust,0);
                 
-                Vector3 vec10 = new Vector3(((x + spacing/2)-negate)/adjust,(y-negate)/adjust,0);
+                Vector3 vec10 = new Vector3(((x + spacing/2)-negate)/adjust,(y2-negate)/adjust,0);
 
                 List<Vector3> tri = new List<Vector3>();
                 tri.Add(vec5);
