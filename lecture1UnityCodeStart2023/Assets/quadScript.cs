@@ -42,12 +42,14 @@ public class quadScript : MonoBehaviour {
         
         List<Vector3> vertices = new List<Vector3>();
         List<int> indices = new List<int>();
-
-        for (int y = spacing/2; y <= 512+spacing/2; y+=(spacing/2))
+        
+        //for (int y = spacing/2; y <= 512+spacing/2; y+= spacing/2) //For loop for squares
+        for (float y = (spacing/2f*Mathf.Sqrt(3))/2; y <= 512+spacing/4; y+=(spacing/2f*Mathf.Sqrt(3))/2)
         {
-            for (int x = spacing/2; x <= 512+spacing/2; x+=(spacing/2))
+            for (int x = spacing/2; x <= 512+spacing/2; x+=(spacing))
             {
-                Vector3 vec1 = new Vector3(((x - low)-negate)/adjust, ((y - low)-negate)/adjust,0);
+                //Make squares
+                /*Vector3 vec1 = new Vector3(((x - low)-negate)/adjust, ((y - low)-negate)/adjust,0);
                 Vector3 vec2 = new Vector3(((x - low)-negate)/adjust, ((y - high)-negate)/adjust,0);
                 Vector3 vec3 = new Vector3(((x - high)-negate)/adjust, ((y - low)-negate)/adjust,0);
                 Vector3 vec4 = new Vector3(((x - high)-negate)/adjust, ((y - high)-negate)/adjust,0);
@@ -63,18 +65,17 @@ public class quadScript : MonoBehaviour {
                 bools.Add(false);
                 bools.Add(false);
                 _squares.Add(arr);
-                _onOff.Add(bools);
+                _onOff.Add(bools);*/
                 
                 //    vec7/8    vec10
                 //
                 //vec5   vec6/9
-                Vector3 vec5 = new Vector3(((x - spacing)-negate)/adjust,((y-spacing/2)-negate)/adjust,0);
-                Vector3 vec6 = new Vector3((x-negate)/adjust,((y-spacing/2)-negate)/adjust,0);
-                float y2 = (Mathf.Sqrt(3 * (vec5.x + vec6.x) / 2) / 2);
-                Vector3 vec7 = new Vector3(((vec5.x+vec6.x)/2-negate)/adjust,(y2-negate)/adjust,0);
+                Vector3 vec5 = new Vector3(((x - spacing)-negate)/adjust,((y-(spacing/2f*Mathf.Sqrt(3))/2)-negate)/adjust,0);
+                Vector3 vec6 = new Vector3((x-negate)/adjust,((y-(spacing/2f*Mathf.Sqrt(3))/2)-negate)/adjust,0);
+                Vector3 vec7 = new Vector3(((vec5.x+vec6.x)/2-negate)/adjust,(y-negate)/adjust,0);
                 
-                Vector3 vec10 = new Vector3(((x + spacing/2)-negate)/adjust,(y2-negate)/adjust,0);
-
+                Vector3 vec10 = new Vector3(((x + spacing/2)-negate)/adjust,(y-negate)/adjust,0);
+                
                 List<Vector3> tri = new List<Vector3>();
                 tri.Add(vec5);
                 tri.Add(vec6);
