@@ -34,7 +34,7 @@ public class quadScript : MonoBehaviour {
 
         string dicomfilepath = Application.dataPath + @"\..\dicomdata\"; // Application.dataPath is in the assets folder, but these files are "managed", so we go one level up
         
-        int spacing = 16;
+        int spacing = 4;
         int low = spacing - (spacing / 4);
         int high = spacing / 4;
         float negate = 256f;
@@ -43,13 +43,77 @@ public class quadScript : MonoBehaviour {
         List<Vector3> vertices = new List<Vector3>();
         List<int> indices = new List<int>();
         
-        //for (int y = spacing/2; y <= 512+spacing/2; y+= spacing/2) //For loop for squares
         for (float y = (spacing/2f*Mathf.Sqrt(3))/2; y <= 512+spacing/4; y+=(spacing/2f*Mathf.Sqrt(3))/2)
         {
-            for (int x = spacing/2; x <= 512+spacing/2; x+=(spacing))
+            for (int x = spacing / 2; x <= 512 + (spacing / 2); x += (spacing))
+            {
+                //    vec7/8    vec10
+                //
+                //vec5   vec6/9
+                Vector3 vec5 = new Vector3(((x - spacing) - negate) / adjust,
+                    ((y - (spacing / 2f * Mathf.Sqrt(3)) / 2) - negate) / adjust, 0);
+                Vector3 vec6 = new Vector3((x - negate) / adjust,
+                    ((y - (spacing / 2f * Mathf.Sqrt(3)) / 2) - negate) / adjust, 0);
+                Vector3 vec7 = new Vector3((((x - spacing) + x) / 2f - negate) / adjust, (y - negate) / adjust, 0);
+
+                List<Vector3> tri = new List<Vector3>();
+                tri.Add(vec5);
+                tri.Add(vec6);
+                tri.Add(vec7);
+                Vector3 vec10 = new Vector3();
+
+                if ((x + spacing / 2) < 512+(spacing/2)){
+                    vec10 = new Vector3(((x + spacing / 2) - negate) / adjust, (y - negate) / adjust, 0);
+                    List<Vector3> tri2 = new List<Vector3>();
+                    tri2.Add(vec7);
+                    tri2.Add(vec6);
+                    tri2.Add(vec10);
+                    _triangles.Add(tri2);
+                }
+                
+                _triangles.Add(tri);
+
+                List<bool> b = new List<bool>();
+                b.Add(false);
+                b.Add(false);
+                b.Add(false);
+                List<bool> b2 = new List<bool>();
+                b2.Add(false);
+                b2.Add(false);
+                b2.Add(false);
+                _onOff2.Add(b);
+                _onOff2.Add(b2);
+
+                //Draw triangles
+                /*vertices.Add(vec5);
+                vertices.Add(vec6);
+                vertices.Add(vec5);
+                vertices.Add(vec7);
+                vertices.Add(vec6);
+                vertices.Add(vec7);
+                vertices.Add(vec7);
+                vertices.Add(vec10);
+                vertices.Add(vec6);
+                vertices.Add(vec10);
+                indices.Add(vertices.Count-10);
+                indices.Add(vertices.Count-9);
+                indices.Add(vertices.Count-8);
+                indices.Add(vertices.Count-7);
+                indices.Add(vertices.Count-6);
+                indices.Add(vertices.Count-5);
+                indices.Add(vertices.Count-4);
+                indices.Add(vertices.Count-3);
+                indices.Add(vertices.Count-2);
+                indices.Add(vertices.Count-1);*/
+            }
+        }
+        
+        for (int y = spacing/2; y <= 512+spacing/2; y+= spacing/2)
+        {
+            for (int x = spacing / 2; x <= 512 + (spacing / 2); x += (spacing/2))
             {
                 //Make squares
-                /*Vector3 vec1 = new Vector3(((x - low)-negate)/adjust, ((y - low)-negate)/adjust,0);
+                Vector3 vec1 = new Vector3(((x - low)-negate)/adjust, ((y - low)-negate)/adjust,0);
                 Vector3 vec2 = new Vector3(((x - low)-negate)/adjust, ((y - high)-negate)/adjust,0);
                 Vector3 vec3 = new Vector3(((x - high)-negate)/adjust, ((y - low)-negate)/adjust,0);
                 Vector3 vec4 = new Vector3(((x - high)-negate)/adjust, ((y - high)-negate)/adjust,0);
@@ -65,70 +129,16 @@ public class quadScript : MonoBehaviour {
                 bools.Add(false);
                 bools.Add(false);
                 _squares.Add(arr);
-                _onOff.Add(bools);*/
+                _onOff.Add(bools);
                 
-                //    vec7/8    vec10
-                //
-                //vec5   vec6/9
-                Vector3 vec5 = new Vector3(((x - spacing)-negate)/adjust,((y-(spacing/2f*Mathf.Sqrt(3))/2)-negate)/adjust,0);
-                Vector3 vec6 = new Vector3((x-negate)/adjust,((y-(spacing/2f*Mathf.Sqrt(3))/2)-negate)/adjust,0);
-                Vector3 vec7 = new Vector3(((vec5.x+vec6.x)/2-negate)/adjust,(y-negate)/adjust,0);
-                
-                Vector3 vec10 = new Vector3(((x + spacing/2)-negate)/adjust,(y-negate)/adjust,0);
-                
-                List<Vector3> tri = new List<Vector3>();
-                tri.Add(vec5);
-                tri.Add(vec6);
-                tri.Add(vec7);
-                List<Vector3> tri2 = new List<Vector3>();
-                tri2.Add(vec7);
-                tri2.Add(vec6);
-                tri2.Add(vec10);
-                _triangles.Add(tri);
-                _triangles.Add(tri2);
-
-                List<bool> b = new List<bool>();
-                b.Add(false);
-                b.Add(false);
-                b.Add(false);
-                List<bool> b2 = new List<bool>();
-                b2.Add(false);
-                b2.Add(false);
-                b2.Add(false);
-                _onOff2.Add(b);
-                _onOff2.Add(b2);
-
-                //Draw squares
-                /*vertices.Add(vec1);
+                vertices.Add(vec1);
                 vertices.Add(vec2);
-                vertices.Add(vec3);
-                vertices.Add(vec4);
                 vertices.Add(vec1);
                 vertices.Add(vec3);
+                vertices.Add(vec3);
+                vertices.Add(vec4);
                 vertices.Add(vec2);
                 vertices.Add(vec4);
-                indices.Add(vertices.Count-8);
-                indices.Add(vertices.Count-7);
-                indices.Add(vertices.Count-6);
-                indices.Add(vertices.Count-5);
-                indices.Add(vertices.Count-4);
-                indices.Add(vertices.Count-3);
-                indices.Add(vertices.Count-2);
-                indices.Add(vertices.Count-1);*/
-                
-                //Draw triangles
-                vertices.Add(vec5);
-                vertices.Add(vec6);
-                vertices.Add(vec5);
-                vertices.Add(vec7);
-                vertices.Add(vec6);
-                vertices.Add(vec7);
-                vertices.Add(vec7);
-                vertices.Add(vec10);
-                vertices.Add(vec6);
-                vertices.Add(vec10);
-                indices.Add(vertices.Count-10);
-                indices.Add(vertices.Count-9);
                 indices.Add(vertices.Count-8);
                 indices.Add(vertices.Count-7);
                 indices.Add(vertices.Count-6);
@@ -410,24 +420,24 @@ public class quadScript : MonoBehaviour {
 
             List<Vector3> points = new List<Vector3>();
 
-            //p2
-            //p1 p3
-            if (b1 != b3)
+            //  p3
+            //p1 p2
+            if (b1 != b2)
             {
-                Vector3 vec = new Vector3((p1.x + p3.x) / 2, p3.y, 0);
+                Vector3 vec = new Vector3((p1.x + p2.x) / 2, p2.y, 0);
                 points.Add(vec);
                 
             }
 
-            if (b1 != b2)
+            if (b1 != b3)
             {
-                Vector3 vec = new Vector3(p2.x, (p2.y + p1.y) / 2, 0);
+                Vector3 vec = new Vector3((p1.x+p3.x)/2, (p3.y + p1.y) / 2, 0);
                 points.Add(vec);
             }
 
             if (b2 != b3)
             {
-                Vector3 vec = new Vector3((p2.x + p3.x) / 2, (p2.y + p3.y) / 2, 0);
+                Vector3 vec = new Vector3((p2.x+p3.x)/2, (p2.y + p3.y) / 2, 0);
                 points.Add(vec);
             }
 
