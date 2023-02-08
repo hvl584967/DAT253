@@ -26,6 +26,7 @@ public class quadScript : MonoBehaviour {
     private List<List<bool>> _onOff2 = new List<List<bool>>();
     private bool _click = false;
     private bool _clickTri = false;
+    float thresh = 0.5f;
 
     // Use this for initialization
     void Start () {
@@ -34,41 +35,71 @@ public class quadScript : MonoBehaviour {
 
         string dicomfilepath = Application.dataPath + @"\..\dicomdata\"; // Application.dataPath is in the assets folder, but these files are "managed", so we go one level up
         
-        int spacing = 4;
+        int spacing = 16;
         int low = spacing - (spacing / 4);
         int high = spacing / 4;
-        float negate = 256f;
-        float adjust = 512f;
-        
+
         List<Vector3> vertices = new List<Vector3>();
         List<int> indices = new List<int>();
-        
-        for (float y = (spacing/2f*Mathf.Sqrt(3))/2; y <= 512+spacing/4; y+=(spacing/2f*Mathf.Sqrt(3))/2)
+        float calcY = (spacing * Mathf.Sqrt(3)) / 2;
+        bool flip = false;
+
+        for (float y = (spacing*Mathf.Sqrt(3))/2; y <= 512+spacing/4; y+=(spacing*Mathf.Sqrt(3))/2)
         {
             for (int x = spacing / 2; x <= 512 + (spacing / 2); x += (spacing))
             {
-                //    vec7/8    vec10
-                //
-                //vec5   vec6/9
-                Vector3 vec5 = new Vector3(((x - spacing) - negate) / adjust,
-                    ((y - (spacing / 2f * Mathf.Sqrt(3)) / 2) - negate) / adjust, 0);
-                Vector3 vec6 = new Vector3((x - negate) / adjust,
-                    ((y - (spacing / 2f * Mathf.Sqrt(3)) / 2) - negate) / adjust, 0);
-                Vector3 vec7 = new Vector3((((x - spacing) + x) / 2f - negate) / adjust, (y - negate) / adjust, 0);
-
                 List<Vector3> tri = new List<Vector3>();
-                tri.Add(vec5);
-                tri.Add(vec6);
-                tri.Add(vec7);
+                List<Vector3> tri2 = new List<Vector3>();
+                Vector3 vec5 = new Vector3();
+                Vector3 vec6 = new Vector3();
+                Vector3 vec7 = new Vector3();
                 Vector3 vec10 = new Vector3();
+                
+                if (!flip)
+                {
+                    //    vec7    vec10
+                    //
+                    //vec5   vec6
+                    vec5 = new Vector3((x - spacing),
+                        y - calcY, 0);
+                    vec6 = new Vector3(x,
+                        y - calcY, 0);
+                    vec7 = new Vector3(((x - spacing) + x) / 2f, y, 0);
 
-                if ((x + spacing / 2) < 512+(spacing/2)){
-                    vec10 = new Vector3(((x + spacing / 2) - negate) / adjust, (y - negate) / adjust, 0);
-                    List<Vector3> tri2 = new List<Vector3>();
-                    tri2.Add(vec7);
-                    tri2.Add(vec6);
-                    tri2.Add(vec10);
-                    _triangles.Add(tri2);
+                    
+                    tri.Add(vec5);
+                    tri.Add(vec6);
+                    tri.Add(vec7);
+
+                    if ((x + spacing / 2) < 512+(spacing/2)){
+                        vec10 = new Vector3((x + spacing / 2), y, 0);
+                        tri2.Add(vec7);
+                        tri2.Add(vec6);
+                        tri2.Add(vec10);
+                        _triangles.Add(tri2);
+                    }
+                }else{
+                    //vec5    vec6
+                    //
+                    //   vec7    vec10
+                    vec5 = new Vector3((x - spacing),
+                        y, 0);
+                    vec6 = new Vector3(x,
+                        y, 0);
+                    vec7 = new Vector3(((x - spacing) + x) / 2f, y - calcY, 0);
+
+                    
+                    tri.Add(vec5);
+                    tri.Add(vec6);
+                    tri.Add(vec7);
+
+                    if ((x + spacing / 2) < 512+(spacing/2)){
+                        vec10 = new Vector3((x + spacing / 2), y - calcY, 0);
+                        tri2.Add(vec7);
+                        tri2.Add(vec6);
+                        tri2.Add(vec10);
+                        _triangles.Add(tri2);
+                    }
                 }
                 
                 _triangles.Add(tri);
@@ -84,17 +115,22 @@ public class quadScript : MonoBehaviour {
                 _onOff2.Add(b);
                 _onOff2.Add(b2);
 
+                Vector3 vec5Mod = new Vector3((vec5.x-256)/512,(vec5.y-256)/512,0);
+                Vector3 vec6Mod = new Vector3((vec6.x-256)/512,(vec6.y-256)/512);
+                Vector3 vec7Mod = new Vector3((vec7.x-256)/512,(vec7.y-256)/512);
+                Vector3 vec10Mod = new Vector3((vec10.x-256)/512,(vec10.y-256)/512);
+                
                 //Draw triangles
-                /*vertices.Add(vec5);
-                vertices.Add(vec6);
-                vertices.Add(vec5);
-                vertices.Add(vec7);
-                vertices.Add(vec6);
-                vertices.Add(vec7);
-                vertices.Add(vec7);
-                vertices.Add(vec10);
-                vertices.Add(vec6);
-                vertices.Add(vec10);
+                vertices.Add(vec5Mod);
+                vertices.Add(vec6Mod);
+                vertices.Add(vec5Mod);
+                vertices.Add(vec7Mod);
+                vertices.Add(vec6Mod);
+                vertices.Add(vec7Mod);
+                vertices.Add(vec7Mod);
+                vertices.Add(vec10Mod);
+                vertices.Add(vec6Mod);
+                vertices.Add(vec10Mod);
                 indices.Add(vertices.Count-10);
                 indices.Add(vertices.Count-9);
                 indices.Add(vertices.Count-8);
@@ -104,8 +140,10 @@ public class quadScript : MonoBehaviour {
                 indices.Add(vertices.Count-4);
                 indices.Add(vertices.Count-3);
                 indices.Add(vertices.Count-2);
-                indices.Add(vertices.Count-1);*/
+                indices.Add(vertices.Count-1);
             }
+
+            flip = !flip;
         }
         
         for (int y = spacing/2; y <= 512+spacing/2; y+= spacing/2)
@@ -113,10 +151,10 @@ public class quadScript : MonoBehaviour {
             for (int x = spacing / 2; x <= 512 + (spacing / 2); x += (spacing/2))
             {
                 //Make squares
-                Vector3 vec1 = new Vector3(((x - low)-negate)/adjust, ((y - low)-negate)/adjust,0);
-                Vector3 vec2 = new Vector3(((x - low)-negate)/adjust, ((y - high)-negate)/adjust,0);
-                Vector3 vec3 = new Vector3(((x - high)-negate)/adjust, ((y - low)-negate)/adjust,0);
-                Vector3 vec4 = new Vector3(((x - high)-negate)/adjust, ((y - high)-negate)/adjust,0);
+                Vector3 vec1 = new Vector3((x - low), (y - low),0);
+                Vector3 vec2 = new Vector3((x - low), (y - high),0);
+                Vector3 vec3 = new Vector3((x - high), (y - low),0);
+                Vector3 vec4 = new Vector3((x - high), (y - high),0);
                 
                 List<Vector3> arr = new List<Vector3>();
                 arr.Add(vec1);
@@ -131,6 +169,7 @@ public class quadScript : MonoBehaviour {
                 _squares.Add(arr);
                 _onOff.Add(bools);
                 
+                /*
                 vertices.Add(vec1);
                 vertices.Add(vec2);
                 vertices.Add(vec1);
@@ -147,6 +186,7 @@ public class quadScript : MonoBehaviour {
                 indices.Add(vertices.Count-3);
                 indices.Add(vertices.Count-2);
                 indices.Add(vertices.Count-1);
+                */
             }
         }
 
@@ -154,7 +194,7 @@ public class quadScript : MonoBehaviour {
         setTexture(_slices[0]);                     // shows the first slice
 
         //  gets the mesh object and uses it to create a diagonal line
-        meshScript mscript = GameObject.Find("GameObjectMesh").GetComponent<meshScript>();
+        meshScript mscript = GameObject.Find("GameObjectMesh2").GetComponent<meshScript>();
         /*
         List<Vector3> vertices = new List<Vector3>();
         List<int> indices = new List<int>();
@@ -268,11 +308,14 @@ public class quadScript : MonoBehaviour {
         _sliderY =(int) val;
         print("sliceIsoSliderChange:" + val);
         setTexture(_slices[0]);
+        
     }
 
     public void sliceSizeSliderCahnge(float val)
     {
-        _size = val;
+        //_size = val;
+        thresh = val;
+        _click = true;
         setTexture(_slices[0]);
     }
     
@@ -292,11 +335,12 @@ public class quadScript : MonoBehaviour {
 
     public void march(Texture2D texture)
     {
-        float thresh = 0.5f;
         meshScript mscript = GameObject.Find("GameObjectMesh").GetComponent<meshScript>();
         
         List<Vector3> vertices = new List<Vector3>();
         List<int> indices = new List<int>();
+        
+        mscript.createMeshGeometry(vertices, indices);
 
         for (int i = 0; i < _squares.Count; i++)
         {
@@ -304,8 +348,8 @@ public class quadScript : MonoBehaviour {
             int k = 0;
             for (int j = 0; j < _squares[0].Count; j++)
             {
-                colors[k] = texture.GetPixel((int) ((_squares[i][j].x * 512) + 256),
-                    (int) ((_squares[i][j].y * 512) + 256)).r;
+                colors[k] = texture.GetPixel((int) (_squares[i][j].x),
+                    (int) (_squares[i][j].y)).r;
                 if (colors[k] < thresh)
                 {
                     _onOff[i][j] = true;
@@ -334,26 +378,26 @@ public class quadScript : MonoBehaviour {
             //p1 p3
             if (b1 != b3)
             {
-                Vector3 vec = new Vector3((p1.x + p3.x) / 2, p3.y, 0);
+                Vector3 vec = getEnd(p1,p3,c1,c3,thresh);
                 points.Add(vec);
                 
             }
 
             if (b1 != b2)
             {
-                Vector3 vec = new Vector3(p2.x, (p2.y + p1.y) / 2, 0);
+                Vector3 vec = getEnd(p1,p2,c1,c2,thresh);
                 points.Add(vec);
             }
 
             if (b3 != b4)
             {
-                Vector3 vec = new Vector3(p4.x, (p4.y + p3.y) / 2, 0);
+                Vector3 vec = getEnd(p3,p4,c3,c4,thresh);
                 points.Add(vec);
             }
 
             if (b2 != b4)
             {
-                Vector3 vec = new Vector3((p4.x + p2.x) / 2, p4.y, 0);
+                Vector3 vec = getEnd(p2,p4,c2,c4,thresh);
                 points.Add(vec);
             }
 
@@ -384,9 +428,12 @@ public class quadScript : MonoBehaviour {
     
     private void marchingTriangles(Texture2D tex)
     {
-
+        
         float thresh = 0.5f;
         meshScript mscript = GameObject.Find("GameObjectMesh").GetComponent<meshScript>();
+        List<Vector3> v = new List<Vector3>();
+        List<int> v2 = new List<int>();
+        mscript.createMeshGeometry(v, v2);
         
         List<Vector3> vertices = new List<Vector3>();
         List<int> indices = new List<int>();
@@ -397,8 +444,8 @@ public class quadScript : MonoBehaviour {
             int k = 0;
             for (int j = 0; j < _triangles[0].Count; j++)
             {
-                colors[k] = tex.GetPixel((int) ((_triangles[i][j].x * 512) + 256),
-                    (int) ((_triangles[i][j].y * 512) + 256)).r;
+                colors[k] = tex.GetPixel((int) (_triangles[i][j].x),
+                    (int) (_triangles[i][j].y)).r;
                 if (colors[k] < thresh)
                 {
                     _onOff2[i][j] = true;
@@ -424,20 +471,20 @@ public class quadScript : MonoBehaviour {
             //p1 p2
             if (b1 != b2)
             {
-                Vector3 vec = new Vector3((p1.x + p2.x) / 2, p2.y, 0);
+                Vector3 vec = getEnd(p1,p2,c1,c2,thresh);
                 points.Add(vec);
                 
             }
 
             if (b1 != b3)
             {
-                Vector3 vec = new Vector3((p1.x+p3.x)/2, (p3.y + p1.y) / 2, 0);
+                Vector3 vec = getEnd(p1,p3,c1,c3,thresh);
                 points.Add(vec);
             }
 
             if (b2 != b3)
             {
-                Vector3 vec = new Vector3((p2.x+p3.x)/2, (p2.y + p3.y) / 2, 0);
+                Vector3 vec = getEnd(p2,p3,c2,c3,thresh);
                 points.Add(vec);
             }
 
@@ -454,4 +501,31 @@ public class quadScript : MonoBehaviour {
         mscript.createMeshGeometry(vertices, indices);
     }
 
+    private Vector3 getEnd(Vector3 p1, Vector3 p2,float c1, float c2,float thresh)
+    {
+        float negate = 256f;
+        float adjust = 512f;
+        float t = getT(c1,c2,thresh);
+        float x;
+        float y;
+        if (c1 < c2)
+        {
+            x = (((1-t)*p1.x+t*p2.x)-negate)/adjust;
+            y = (((1-t)*p1.y+t*p2.y)-negate)/adjust;
+        }
+        else
+        {
+            x = (((1-t)*p2.x+t*p1.x)-negate)/adjust;
+            y = (((1-t)*p2.y+t*p1.y)-negate)/adjust;
+        }
+        Vector3 temp = new Vector3(x,y,0);
+        return temp;
+    }
+
+    private float getT(float c1, float c2, float iso)
+    {
+        float v1 = Mathf.Min(c2,c1);
+        float v2 = Mathf.Max(c2,c1);
+        return (iso - v1) / (v2 - v1);
+    }
 }
