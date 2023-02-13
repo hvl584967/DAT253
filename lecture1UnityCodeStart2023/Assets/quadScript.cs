@@ -3,7 +3,6 @@ using System.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Unity.VisualScripting;
 
 public class quadScript : MonoBehaviour {
 
@@ -39,7 +38,7 @@ public class quadScript : MonoBehaviour {
         string dicomfilepath = Application.dataPath + @"\..\dicomdata\"; // Application.dataPath is in the assets folder, but these files are "managed", so we go one level up
 
         int size = 512;
-        int spacing = 32;
+        int spacing = 16;
         int low = spacing - (spacing / 4);
         int high = spacing / 4;
         float negate = 256f;
@@ -497,18 +496,18 @@ public class quadScript : MonoBehaviour {
                     //Bottom of qube
                     //p010 p110
                     //p000 p100
-                    Vector3 p000 = new Vector3(((x - low)-negate)/adjust, ((y - low)-negate)/adjust,((z - low)-negate)/adjust);
-                    Vector3 p010 = new Vector3(((x - low)-negate)/adjust, ((y - low)-negate)/adjust,((z - high)-negate)/adjust);
-                    Vector3 p100 = new Vector3(((x - high)-negate)/adjust, ((y - low)-negate)/adjust,((z - low)-negate)/adjust);
-                    Vector3 p110 = new Vector3(((x - high)-negate)/adjust, ((y - low)-negate)/adjust,((z - high)-negate)/adjust);
+                    Vector3 p000 = new Vector3(((x - low)-negate)/adjust, ((y - low)-negate)/adjust,((z - low)-negate)/adjust); //p0
+                    Vector3 p010 = new Vector3(((x - low)-negate)/adjust, ((y - low)-negate)/adjust,((z - high)-negate)/adjust); //p4
+                    Vector3 p100 = new Vector3(((x - high)-negate)/adjust, ((y - low)-negate)/adjust,((z - low)-negate)/adjust); //p1
+                    Vector3 p110 = new Vector3(((x - high)-negate)/adjust, ((y - low)-negate)/adjust,((z - high)-negate)/adjust); //p5
                     
                     //Top of qube
                     //p011 p111
                     //p001 p101
-                    Vector3 p001 = new Vector3(((x - low)-negate)/adjust, ((y - high)-negate)/adjust,((z - low)-negate)/adjust);
-                    Vector3 p011 = new Vector3(((x - low)-negate)/adjust, ((y - high)-negate)/adjust,((z - high)-negate)/adjust);
-                    Vector3 p101 = new Vector3(((x - high)-negate)/adjust, ((y - high)-negate)/adjust,((z - low)-negate)/adjust);
-                    Vector3 p111 = new Vector3(((x - high)-negate)/adjust, ((y - high)-negate)/adjust,((z - high)-negate)/adjust);
+                    Vector3 p001 = new Vector3(((x - low)-negate)/adjust, ((y - high)-negate)/adjust,((z - low)-negate)/adjust); //p2
+                    Vector3 p011 = new Vector3(((x - low)-negate)/adjust, ((y - high)-negate)/adjust,((z - high)-negate)/adjust); //p6
+                    Vector3 p101 = new Vector3(((x - high)-negate)/adjust, ((y - high)-negate)/adjust,((z - low)-negate)/adjust); //p3
+                    Vector3 p111 = new Vector3(((x - high)-negate)/adjust, ((y - high)-negate)/adjust,((z - high)-negate)/adjust); //p7
 
                     List<Vector3> tetra1 = new List<Vector3>();
                     List<Vector3> tetra2 = new List<Vector3>();
@@ -516,36 +515,42 @@ public class quadScript : MonoBehaviour {
                     List<Vector3> tetra4 = new List<Vector3>();
                     List<Vector3> tetra5 = new List<Vector3>();
                     List<Vector3> tetra6 = new List<Vector3>();
-                    
-                    tetra1.Add(p000);
+
+                    //4 6 0 7
                     tetra1.Add(p010);
-                    tetra1.Add(p110);
+                    tetra1.Add(p011);
+                    tetra1.Add(p000);
                     tetra1.Add(p111);
                     
-                    tetra2.Add(p000);
-                    tetra2.Add(p010);
+                    //6 0 7 2
                     tetra2.Add(p011);
+                    tetra2.Add(p000);
                     tetra2.Add(p111);
-                    
+                    tetra2.Add(p001);
+
+                    //0 7 2 3
                     tetra3.Add(p000);
-                    tetra3.Add(p001);
-                    tetra3.Add(p011);
                     tetra3.Add(p111);
+                    tetra3.Add(p001);
+                    tetra3.Add(p101);
                     
-                    tetra4.Add(p000);
-                    tetra4.Add(p001);
+                    //4 5 7 0
+                    tetra4.Add(p010);
+                    tetra4.Add(p110);
                     tetra4.Add(p111);
-                    tetra4.Add(p101);
+                    tetra4.Add(p000);
                     
-                    tetra5.Add(p000);
+                    //1 7 0 3
                     tetra5.Add(p100);
-                    tetra5.Add(p110);
                     tetra5.Add(p111);
-                    
+                    tetra5.Add(p000);
+                    tetra5.Add(p101);
+
+                    //0 5 7 1
                     tetra6.Add(p000);
-                    tetra6.Add(p100);
-                    tetra6.Add(p101);
+                    tetra6.Add(p110);
                     tetra6.Add(p111);
+                    tetra6.Add(p100);
 
                     for (int i = 0; i < 6; i++)
                     {
@@ -625,9 +630,8 @@ public class quadScript : MonoBehaviour {
                 }
             }
         }
-        
         //meshScript mscript = GameObject.Find("GameObjectMesh").GetComponent<meshScript>();
-        //mscript.createMeshGeometry(vertices, indices);
+        //mscript.createMeshGeometry(vertices, indices, MeshTopology.Triangles);
     }
     
     private void marchingTetraeder()
@@ -670,40 +674,47 @@ public class quadScript : MonoBehaviour {
             bool b4 = _onOff3[i][3];
 
             List<Vector3> points = new List<Vector3>();
-            
+            List<float> val = new List<float>();
+
             if (b1 != b2)
             {
                 Vector3 vec = getEnd3(p1,p2,v1,v2);
+                val.Add(getSphereDist(vec));
                 points.Add(vec);
             }
 
             if (b1 != b3)
             {
                 Vector3 vec = getEnd3(p1,p3,v1,v3);
+                val.Add(getSphereDist(vec));
                 points.Add(vec);
             }
 
             if (b2 != b3)
             {
                 Vector3 vec = getEnd3(p2,p3,v2,v3);
+                val.Add(getSphereDist(vec));
                 points.Add(vec);
             }
 
             if (b1 != b4)
             {
                 Vector3 vec = getEnd3(p1,p4,v1,v4);
+                val.Add(getSphereDist(vec));
                 points.Add(vec);
             }
 
             if (b2 != b4)
             {
                 Vector3 vec = getEnd3(p2,p4,v2,v4);
+                val.Add(getSphereDist(vec));
                 points.Add(vec);
             }
 
             if (b3 != b4)
             {
                 Vector3 vec = getEnd3(p3,p4,v3,v4);
+                val.Add(getSphereDist(vec));
                 points.Add(vec);
             }
 
@@ -713,27 +724,29 @@ public class quadScript : MonoBehaviour {
                 vertices.Add(points[0]);
                 vertices.Add(points[1]);
                 vertices.Add(points[2]);
-                int val = vertices.Count;
-                indices.Add(val-3);
-                indices.Add(val-2);
-                indices.Add(val-1);
+                int value = vertices.Count;
+                indices.Add(value-3);
+                indices.Add(value-2);
+                indices.Add(value-1);
             }else if (len == 4)
             {
+                
                 vertices.Add(points[0]);
                 vertices.Add(points[1]);
                 vertices.Add(points[2]);
                 vertices.Add(points[3]);
-                int val = vertices.Count;
-                indices.Add(val-4);
-                indices.Add(val-3);
-                indices.Add(val-2);
-                indices.Add(val-3);
-                indices.Add(val-2);
-                indices.Add(val-1);
+                int value = vertices.Count;
+                indices.Add(value-4);
+                indices.Add(value-3);
+                indices.Add(value-2);
+                indices.Add(value-3);
+                indices.Add(value-2);
+                indices.Add(value-1);
             }
 
         }
         mscript.createMeshGeometry(vertices, indices, MeshTopology.Triangles);
+        mscript.toFile("test.obj",vertices,indices);
     }
     
     private Vector3 getEnd3(Vector3 p1, Vector3 p2,float v1, float v2)
@@ -744,6 +757,7 @@ public class quadScript : MonoBehaviour {
         float z;
         if (v1 < v2)
         {
+            
             x = (1-t)*p1.x+t*p2.x;
             y = (1-t)*p1.y+t*p2.y;
             z = (1-t)*p1.z+t*p2.z;
