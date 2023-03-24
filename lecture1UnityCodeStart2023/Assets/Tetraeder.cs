@@ -1,32 +1,48 @@
 ﻿using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace DefaultNamespace
 {
     public class Tetraeder
     {
-        private List<List<Vector3>> _tetraeder;
-        private List<List<bool>> _onOff3;
+        private Material material;
+        private Material materialBack;
+        private List<List<Vector3>> _tetraeder = new List<List<Vector3>>();
+        private List<List<bool>> _onOff3 = new List<List<bool>>();
         List<Vector3> _vertices;
         List<int> _indices;
         float _thresh = 0.5f;
 
         private int low;
         private int high;
-        private int size;
+        private int height;
+        private int width;
+        private int depth;
         private int spacing;
-        private float negate;
-        private float adjust;
+        private float negatex;
+        private float negatey;
+        private float negatez;
+        private float adjustx;
+        private float adjusty;
+        private float adjustz;
 
-        public Tetraeder(int low, int high, int size, int spacing, float negate, float adjust)
+        public Tetraeder(int low, int high, int height,int width, int depth, int spacing,Material material,Material materialBack)
         {
             this.low = low;
             this.high = high;
-            this.size = size;
+            this.height = height;
+            this.width = width;
+            this.depth = depth;
             this.spacing = spacing;
-            this.negate = negate;
-            this.adjust = adjust;
+            negatex = width/2f;
+            negatey = height/2f;
+            negatez = depth/2f;
+            adjustx = width;
+            adjusty = height;
+            adjustz = depth;
+            this.material = material;
+            this.materialBack = materialBack;
         }
 
         /// <summary>
@@ -35,35 +51,35 @@ namespace DefaultNamespace
         /// </summary>
         public void segmentTetraeder()
         {
-            for (int z = spacing / 2; z <= size + spacing / 2; z += spacing / 2)
+            for (int z = spacing / 2; z <= depth + spacing / 2; z += spacing / 2)
             {
-                for (int y = spacing / 2; y <= size + spacing / 2; y += spacing / 2)
+                for (int y = spacing / 2; y <= height + spacing / 2; y += spacing / 2)
                 {
-                    for (int x = spacing / 2; x <= size + spacing / 2; x += spacing / 2)
+                    for (int x = spacing / 2; x <= width + spacing / 2; x += spacing / 2)
                     {
                         //Bottom of qube
                         //p010 p110
                         //p000 p100
-                        Vector3 p000 = new Vector3(((x - low) - negate) / adjust, ((y - low) - negate) / adjust,
-                            ((z - low) - negate) / adjust); //p0
-                        Vector3 p010 = new Vector3(((x - low) - negate) / adjust, ((y - low) - negate) / adjust,
-                            ((z - high) - negate) / adjust); //p4
-                        Vector3 p100 = new Vector3(((x - high) - negate) / adjust, ((y - low) - negate) / adjust,
-                            ((z - low) - negate) / adjust); //p1
-                        Vector3 p110 = new Vector3(((x - high) - negate) / adjust, ((y - low) - negate) / adjust,
-                            ((z - high) - negate) / adjust); //p5
+                        Vector3 p000 = new Vector3(((x - low) - negatex) / adjustx, ((y - low) - negatey) / adjusty,
+                            ((z - low) - negatez) / adjustz); //p0
+                        Vector3 p010 = new Vector3(((x - low) - negatex) / adjustx, ((y - low) - negatey) / adjusty,
+                            ((z - high) - negatez) / adjustz); //p4
+                        Vector3 p100 = new Vector3(((x - high) - negatex) / adjustx, ((y - low) - negatey) / adjusty,
+                            ((z - low) - negatez) / adjustz); //p1
+                        Vector3 p110 = new Vector3(((x - high) - negatex) / adjustx, ((y - low) - negatey) / adjusty,
+                            ((z - high) - negatez) / adjustz); //p5
 
                         //Top of qube
                         //p011 p111
                         //p001 p101
-                        Vector3 p001 = new Vector3(((x - low) - negate) / adjust, ((y - high) - negate) / adjust,
-                            ((z - low) - negate) / adjust); //p2
-                        Vector3 p011 = new Vector3(((x - low) - negate) / adjust, ((y - high) - negate) / adjust,
-                            ((z - high) - negate) / adjust); //p6
-                        Vector3 p101 = new Vector3(((x - high) - negate) / adjust, ((y - high) - negate) / adjust,
-                            ((z - low) - negate) / adjust); //p3
-                        Vector3 p111 = new Vector3(((x - high) - negate) / adjust, ((y - high) - negate) / adjust,
-                            ((z - high) - negate) / adjust); //p7
+                        Vector3 p001 = new Vector3(((x - low) - negatex) / adjustx, ((y - high) - negatey) / adjusty,
+                            ((z - low) - negatez) / adjustz); //p2
+                        Vector3 p011 = new Vector3(((x - low) - negatex) / adjustx, ((y - high) - negatey) / adjusty,
+                            ((z - high) - negatez) / adjustz); //p6
+                        Vector3 p101 = new Vector3(((x - high) - negatex) / adjustx, ((y - high) - negatey) / adjusty,
+                            ((z - low) - negatez) / adjustz); //p3
+                        Vector3 p111 = new Vector3(((x - high) - negatex) / adjustx, ((y - high) - negatey) / adjusty,
+                            ((z - high) - negatez) / adjustz); //p7
 
                         List<Vector3> tetra1 = new List<Vector3>();
                         List<Vector3> tetra2 = new List<Vector3>();
@@ -117,9 +133,18 @@ namespace DefaultNamespace
         /// <summary>
         /// Draws triangles 
         /// </summary>
-        public void marchingTetraeder()
+        public void marchingTetraeder(ushort[] cloud)
         {
             meshScript mscript = GameObject.Find("GameObjectMesh").GetComponent<meshScript>();
+
+            Mesh mesh = new Mesh();
+            Mesh meshBack = new Mesh();
+
+            GameObject gameObject = new GameObject("Mesh",typeof(MeshFilter),typeof(MeshRenderer));
+            gameObject.transform.localScale = new Vector3(8,8,8);
+            
+            GameObject gameObject2 = new GameObject("MeshBack",typeof(MeshFilter),typeof(MeshRenderer));
+            gameObject2.transform.localScale = new Vector3(8,8,8);
 
             _vertices = new List<Vector3>();
             _indices = new List<int>();
@@ -131,17 +156,30 @@ namespace DefaultNamespace
                 float[] values = new float[4];
                 int k = 0;
                 for (int j = 0; j < _tetraeder[0].Count; j++)
-                {
+                { 
                     _onOff3[i][j] = false;
-                    values[k] = Helper.getDist(_tetraeder[i][j]);
-                    if (values[k] < _thresh)
+                    if (cloud == null)
                     {
-                        _onOff3[i][j] = true;
+                        values[k] = Helper.getDist(_tetraeder[i][j]);
                     }
-
+                    else
+                    {
+                        Vector3 vec = _tetraeder[i][j];
+                        int x = (int) (vec.x * width+negatex);
+                        int y = (int) (vec.y * height+negatey);
+                        int z = (int) (vec.z * depth+negatez);
+                        if (vec.x < 0.5 && vec.y < 0.5 && vec.z < 0.5 && vec.x > -0.5 && vec.y > -0.5 && vec.z > -0.5)
+                        {
+                            //Debug.Log($"x {x} y {y} z {z}");
+                            values[k] = cloud[x + width * (z + y * depth)]/2441f;
+                        }
+                    }
+                    
+                    if (values[k] < _thresh) 
+                        _onOff3[i][j] = true;
                     k++;
                 }
-
+                
                 Vector3 p1 = _tetraeder[i][0];
                 Vector3 p2 = _tetraeder[i][1];
                 Vector3 p3 = _tetraeder[i][2];
@@ -203,8 +241,23 @@ namespace DefaultNamespace
                 }
             }
 
-            mscript.createMeshGeometry(_vertices, _indices, MeshTopology.Triangles);
-            //mscript.toFile("test.obj", vertices, indices);
+            mesh.indexFormat = IndexFormat.UInt32;
+            meshBack.indexFormat = IndexFormat.UInt32;
+            
+            mesh.SetVertices(_vertices);
+            meshBack.SetVertices(_vertices);
+            mesh.SetIndices(_indices,MeshTopology.Triangles,0);
+            _indices.Reverse();
+            meshBack.SetIndices(_indices,MeshTopology.Triangles,0);
+
+            gameObject.GetComponent<MeshFilter>().mesh = mesh;
+            gameObject.GetComponent<MeshRenderer>().material = material;
+            
+            gameObject2.GetComponent<MeshFilter>().mesh = meshBack;
+            gameObject2.GetComponent<MeshRenderer>().material = materialBack;
+
+            //mscript.createMeshGeometry(_vertices, _indices, MeshTopology.Triangles);
+            mscript.toFile("test.obj", _vertices, _indices);
         }
 
         /// <summary>
@@ -224,7 +277,7 @@ namespace DefaultNamespace
             bool t;
             if (dot > 0)
                 t = true;
-            else 
+            else
                 t = false;
             return t;
         }

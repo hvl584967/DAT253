@@ -3,7 +3,10 @@ using System.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Numerics;
 using DefaultNamespace;
+using Vector2 = UnityEngine.Vector2;
+using Vector3 = UnityEngine.Vector3;
 
 public class quadScript : MonoBehaviour {
 
@@ -18,6 +21,8 @@ public class quadScript : MonoBehaviour {
     int _maxIntensity;
     //int _iso;
 
+    public Material material;
+    public Material materialBack;
     private int _sliderX = 256;
     private int _sliderY = 256;
     private float _size = 0.5f;
@@ -28,6 +33,10 @@ public class quadScript : MonoBehaviour {
     private Square _sq;
     private Triangle _tri;
     float _thresh = 0.5f;
+    private float _sliderImg = 0f;
+    private ushort[] _points;
+    private int _height;
+    private int _spacing = 4;
 
     // Use this for initialization
     void Start () {
@@ -37,17 +46,21 @@ public class quadScript : MonoBehaviour {
         string dicomfilepath = Application.dataPath + @"\..\dicomdata\"; // Application.dataPath is in the assets folder, but these files are "managed", so we go one level up
 
         int size = 512;
-        int spacing = 16;
-        int low = spacing - (spacing / 4);
-        int high = spacing / 4;
+        
+        int low = _spacing - (_spacing / 4);
+        int high = _spacing / 4;
         float negate = 256f;
         float adjust = 512f;
 
-        _tri = new Triangle(size,spacing,negate,adjust);
-        _tri.segmentTriangle();
-        _sq = new Square(low, high, size, spacing, negate, adjust);
-        _sq.segmentSquare();
-        _tetra = new Tetraeder(low,high,size,spacing,negate,adjust);
+        _height = 355;
+        int width = 512;
+        int depth = 512;
+
+        //_tri = new Triangle(size,_spacing,negate,adjust);
+        //_tri.segmentTriangle();
+        //_sq = new Square(low, high, size, _spacing, negate, adjust);
+        //_sq.segmentSquare();
+        _tetra = new Tetraeder(low,high,_height,width,depth,_spacing,material,materialBack);
         _tetra.segmentTetraeder();
 
         _slices = processSlices(dicomfilepath);     // loads slices from the folder above
@@ -111,14 +124,26 @@ public class quadScript : MonoBehaviour {
         ushort[] pixels = slice.getPixels();
         
         for (int y = 0; y < ydim; y++)
+        for (int x = 0; x < xdim; x++)
+        {
+            float val = pixelval(new Vector2(x, y), xdim, pixels);
+            float v = (val-_minIntensity) / _maxIntensity;      // maps [_minIntensity,_maxIntensity] to [0,1] , i.e.  _minIntensity to black and _maxIntensity to white
+            texture.SetPixel(x, y, new UnityEngine.Color(v, v, v));
+        }
+
+        if (_click||_clickTet||_clickTri)
+        {
+            for (int y = 0; y < ydim; y++)
             for (int x = 0; x < xdim; x++)
             {
+                
                 var rToRGB = Mathf.Sqrt(Mathf.Pow((_sliderX-x)/_size,2)+Mathf.Pow((_sliderY-y)/_size,2))/362;
                 
                 float val = pixelval(new Vector2(x, y), xdim, pixels);
                 float v = (val-_minIntensity) / _maxIntensity;      // maps [_minIntensity,_maxIntensity] to [0,1] , i.e.  _minIntensity to black and _maxIntensity to white
                 texture.SetPixel(x, y, new UnityEngine.Color(rToRGB, rToRGB, rToRGB));
             }
+        }
 
         LineRenderer rend = new LineRenderer();
 
@@ -130,6 +155,12 @@ public class quadScript : MonoBehaviour {
     ushort pixelval(Vector2 p, int xdim, ushort[] pixels)
     {
         return pixels[(int)p.x + (int)p.y * xdim];
+    }
+
+    public void sliceShow(float val)
+    {
+        _sliderImg = val;
+        setTexture(_slices[(int)(_sliderImg*_slices.Length)]);
     }
 
     public void slicePosSliderChange(float val)
@@ -165,7 +196,7 @@ public class quadScript : MonoBehaviour {
         if (_clickTet)
         {
             _tetra.setThresh(_thresh);
-            _tetra.marchingTetraeder();
+            _tetra.marchingTetraeder(new ushort[]{});
         }
     }
     
@@ -185,8 +216,16 @@ public class quadScript : MonoBehaviour {
     
     public void button3Pushed()
     {
-        _tetra.marchingTetraeder();
-        _clickTet = true;
+        getValues();
+        _tetra.marchingTetraeder(_points);
+        _clickTet = !_clickTet;
         print("button3Pushed");
+    }
+
+    private void getValues()
+    {
+        _points = _points ?? _slices
+            .SelectMany(s => s.getPixels())
+            .ToArray();
     }
 }
