@@ -36,8 +36,8 @@ struct sphere
                 rec.normal = (rec.p - center)/radius;
                 return true;
             }
-            return false;
         }
+        return false;
     }
 };
 
