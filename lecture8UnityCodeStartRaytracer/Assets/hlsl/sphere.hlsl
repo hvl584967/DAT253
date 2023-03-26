@@ -8,8 +8,6 @@ struct sphere
 {
     float3 center;
     float radius;
-    int materialtype;
-    float3 matproperties;
 
     bool sphere_hit(ray r, float t_min,float t_max,out hit_record rec)
     {
@@ -46,8 +44,8 @@ sphere make_sphere(float3 center,float radius,int materialtype,float3 matpropert
     sphere sphere;
     sphere.center = center;
     sphere.radius = radius;
-    sphere.materialtype = materialtype;
-    sphere.matproperties.xyz = matproperties;
+    //sphere.materialtype = materialtype;
+    //sphere.matproperties.xyz = matproperties;
     return sphere;
 }
 #endif

@@ -18,6 +18,8 @@ Shader "Unlit/SingleColor"
             #pragma fragment frag
             #include "hlsl/ray.hlsl"
             #include "hlsl/sphere.hlsl"
+            #include "hlsl/camera.hlsl"
+            #include "hlsl/hash.hlsl"
             #include "UnityCG.cginc"
             typedef vector <float, 3> vec3; // to get more similar code to book
             typedef vector <fixed, 3> col3;
@@ -79,36 +81,72 @@ Shader "Unlit/SingleColor"
                 }
                 return sph;
             }
-
-            float3 color(ray r)
+            
+            float rand(in float2 uv)
             {
-                float max = 10; // max bounces
-                hit_record recs[2];
-                for (int i = 0; i < 2; i++)
+                float2 noise = (frac(sin(dot(uv, float2(12.9898, 78.233)*2.0)) * 43758.5453));
+                return abs(noise.x + noise.y) * 0.5;
+            }
+
+            
+
+            bool hit(ray r, float t_min, float t_max,out hit_record rec)
+            {
+                hit_record temp_rec;
+                for(int i = 0; i<2;i++)
                 {
-                    if(getsphere(i).sphere_hit(r,0.0,max,recs[i]))
+                    if(getsphere(i).sphere_hit(r,t_min,t_max,temp_rec))
                     {
-                        return 0.5*float3(recs[i].normal.x+1,recs[i].normal.y+1,recs[i].normal.z+1);
+                        rec = temp_rec;
+                        return true;
                     }
                 }
-                
+                return false;
+            }
+
+            float3 color(ray r,float3 rnd)
+            {
+                float tmax = 10;
+                hit_record rec;
                 float3 unit_direction = unit_vector(r.direction());
                 float t = 0.5*(unit_direction.y +1.0);
+                float3 col = (1.0-t)*1.0 + t*float3(0.5,0.7,1);
+                float max = 10;
+                if(hit(r,0.0,tmax,rec))
+                {
+                    while(hit(r,0.001,tmax,rec) && max>0)
+                    {
+                        float3 target = rec.p + rec.normal + random_unit_sphere(rnd*max*rec.t);
+                        col =  0.5*col;
+                        r = make_ray(rec.p,target - rec.p);
+                        max--;
+                    }
+                    if(hit(r,0.0,tmax,rec) && max==0)
+                        return float3(0,0,0);
+                    return col;
+                }
+                unit_direction = unit_vector(r.direction());
+                t = 0.5*(unit_direction.y +1.0);
                 return (1.0-t)*1.0 + t*float3(0.5,0.7,1);
             }
 
             ////////////////////////////////////////////////////////////////////////////////////////////////////////
             fixed4 frag(v2f c) : SV_Target
             {
-                float3 lower_left_corner = {-2, -1, -1};
-                float3 horizontal = {4, 0, 0};
-                float3 vertical = {0, 2, 0};
-                float3 origin = {0, 0, 0};
-                float u = c.uv.x;
-                float v = c.uv.y;
-                ray r = make_ray(origin, lower_left_corner + u * horizontal + v * vertical);
+                int ns = 500;
+                float3 col = float3(0.0,0.0,0.0);
+                camera cam = make_camera();
+                for(int s = 0;s<ns;s++)
+                {
+                    float u = c.uv.x + hash13(float3(s,ns,c.uv.x))/3000;
+                    float v = c.uv.y + hash13(float3(ns,s,c.uv.y))/2000;
+                    ray r = cam.get_rey(u,v);
+                    float3 p = r.point_at_parameter(2.0);
+                    col += color(r,hash33(float3(c.vertex.x,c.vertex.y,c.uv.x)));
+                }
                 
-                float3 col = color(r);
+                col /= float(ns);
+                col = float3(sqrt(col.x),sqrt(col.y),sqrt(col.z));
                 return fixed4(col, 1);
             }
 
