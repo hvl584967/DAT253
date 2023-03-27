@@ -94,22 +94,21 @@ bool scatter_dielectric(ray r_in,hit_record rec,out float3 attenuation,out ray s
     {
         out_normal = rec.normal;
         ni_over_nt = 1.0/rec.mat.ridx;
-        cosine = dot(r_in.direction(),rec.normal) / length(r_in.direction());
+        cosine = -dot(r_in.direction(),rec.normal) / length(r_in.direction());
     }
     if(refract(r_in.direction(),out_normal,ni_over_nt,refracted))
     {
         refprob = schlick(cosine,rec.mat.ridx);
     }else
     {
-        scattered = make_ray(rec.p,reflected);
         refprob = 1.0;
     }
-    if(refract()
-    {
-        scattered = make_ray(rec.p,refracted);
-    }else
+    if(hash13(random_unit_sphere(123.123)) < refprob)
     {
         scattered = make_ray(rec.p,reflected);
+    }else
+    {
+        scattered = make_ray(rec.p,refracted);
     }
     return true;
 }

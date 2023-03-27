@@ -66,13 +66,19 @@ Shader "Unlit/SingleColor"
             sphere getsphere(int i)
             {
                 sphere sph;
-                if (i == 0) { sph = make_sphere(float3( 0, 0, -1),0.5,create_material(0, float3(0.8, 0.3, 0.3)));
+                const float pi = 3.14159265f;
+                float r = cos(pi/4);
+                if (i == 0) { sph = make_sphere(float3( -r, 0, -1),r,create_material(0, float3(0, 0, 1)));
+                }
+                if (i == 1) { sph = make_sphere(float3( r, 0, -1),r,create_material(0, float3(1, 0, 0)));
+                }
+                /*if (i == 0) { sph = make_sphere(float3( 0, 0, -1),0.5,create_material(0, float3(0.8, 0.3, 0.3)));
                 }
                 if (i == 4) { sph = make_sphere(float3( 0, -100.5, -1),100,create_material(0, float3(0.8, 0.8, 0.0)));
                 }
                 if (i == 1) { sph = make_sphere(float3( 1, 0, -1),0.5,create_material(1, float3(0.8, 0.6, 0.2),0.3));
                 }
-                if (i == 2) { sph = make_sphere(float3( -1, 0, -1),0.5,create_material(2, float3(0.8, 0.8, 0.8),1.5));}
+                if (i == 2) { sph = make_sphere(float3( -1, 0, -1),0.5,create_material(2, float3(0.8, 0.8, 0.8),1.5));}*/
                 return sph;
             }
             
