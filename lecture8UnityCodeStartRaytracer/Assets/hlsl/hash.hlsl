@@ -182,13 +182,22 @@ float square_length(float3 vec)
         + vec.z * vec.z;
 }
 
+static float hashed = 235706.14367;
+float3 random3(const float seed)
+{
+    hashed = hash11(seed + hashed *  883);
+    const float3 t3 = hash31(seed + hashed *  727);
+
+    return t3;
+}
+
 float3 random_unit_sphere(const float seed)
 {
     float3 vec = 0;
 
     do
     {
-        vec = 2.0 * hash33(float3(seed + vec.z,vec.x*seed,vec.y)) - 1;
+        vec = 2.0 * random3(float3(seed + vec.z*100,100*vec.x+seed,vec.y*100+seed)) - 1;
     }
     while (square_length(vec) >= 1.0);
 

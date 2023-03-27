@@ -16,15 +16,17 @@ Shader "Unlit/SingleColor"
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
+
+            #define FLOAT_MAX 3.402823466e38F
+            
             #include "hlsl/ray.hlsl"
             #include "hlsl/sphere.hlsl"
             #include "hlsl/camera.hlsl"
             #include "hlsl/hash.hlsl"
+            #include "hlsl/matfunc.hlsl"
             #include "UnityCG.cginc"
             typedef vector <float, 3> vec3; // to get more similar code to book
             typedef vector <fixed, 3> col3;
-
-            #define FLOAT_MAX 3.402823466e38F
 
             struct appdata
             {
@@ -46,11 +48,6 @@ Shader "Unlit/SingleColor"
                 return o;
             }
 
-            float3 unit_vector(float3 v)
-            {
-                return v / length(v);
-            }
-
             float hit_sphere(float3 center, float radius, ray r)
             {
                 float3 oc = r.origin() - center;
@@ -69,32 +66,69 @@ Shader "Unlit/SingleColor"
             sphere getsphere(int i)
             {
                 sphere sph;
-                if (i == 0) { sph = make_sphere(float3( 0, 0, -1),0.5);
+                if (i == 0) { sph = make_sphere(float3( 0, 0, -1),0.5,create_material(0, float3(0.8, 0.3, 0.3)));
                 }
-                if (i == 1) { sph = make_sphere(float3( 0, -100.5, -1),100);
+                if (i == 3) { sph = make_sphere(float3( 0, -100.5, -1),100,create_material(0, float3(0.8, 0.8, 0.0)));
                 }
-                if (i == 2) { sph = make_sphere(float3( 1, 0, -1),0.5);
+                if (i == 2) { sph = make_sphere(float3( 1, 0, -1),0.5,create_material(1, float3(0.8, 0.6, 0.2),0.3));
                 }
-                if (i == 3) { sph = make_sphere(float3( -1, 0, -1),0.5);
+                if (i == 1) { sph = make_sphere(float3( -1, 0, -1),0.5,create_material(1, float3(0.8, 0.8, 0.8),1.0));
                 }
                 return sph;
+            }
+            
+            float rand(in float2 uv)
+            {
+                float2 noise = (frac(sin(dot(uv, float2(12.9898, 78.233)*2.0)) * 43758.5453));
+                return abs(noise.x + noise.y) * 0.5;
+            }
+
+            bool hit(ray r, float t_min, float t_max,out hit_record rec)
+            {
+                hit_record temp_rec;
+                for(int i = 0; i<4;i++)
+                {
+                    if(getsphere(i).sphere_hit(r,t_min,t_max,temp_rec))
+                    {
+                        rec = temp_rec;
+                        return true;
+                    }
+                }
+                return false;
             }
 
             float3 color(ray r)
             {
-                float max = FLOAT_MAX;
+                float tmax = FLOAT_MAX;
                 hit_record rec;
-                for (int i = 0; i < 2; i++)
+                float3 col = float3(1,1,1);
+                float max = 7;
+                bool hit_world = hit(r,0.001,tmax,rec);
+                if(hit_world)
                 {
-                    if(getsphere(i).sphere_hit(r,0.0,max,rec))
+                    while(hit_world)
                     {
-                        return 0.5*float3(rec.normal.x+1,rec.normal.y+1,rec.normal.z+1);
+                        ray s;
+                        float3 color;
+                        if(scatter(r,rec,color,s) && max>0)
+                        {
+                            col *= color;
+                            r = s;
+                        }
+                        else
+                        {
+                            col = 0;
+                            break;
+                        }
+                        hit_world = hit(r,0.001,tmax,rec);
+                        max--;
                     }
+                    if(hit_world && max==0)
+                        return col;
                 }
-                
                 float3 unit_direction = unit_vector(r.direction());
                 float t = 0.5*(unit_direction.y +1.0);
-                return (1.0-t)*1.0 + t*float3(0.5,0.7,1);
+                return col*((1.0-t)*1.0 + t*float3(0.5,0.7,1));
             }
 
             ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -113,6 +147,7 @@ Shader "Unlit/SingleColor"
                 }
                 
                 col /= float(ns);
+                col = float3(sqrt(col.x),sqrt(col.y),sqrt(col.z));
                 return fixed4(col, 1);
             }
 
