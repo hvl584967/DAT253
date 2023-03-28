@@ -66,19 +66,19 @@ Shader "Unlit/SingleColor"
             sphere getsphere(int i)
             {
                 sphere sph;
-                const float pi = 3.14159265f;
+                /*const float pi = 3.14159265f;
                 float r = cos(pi/4);
                 if (i == 0) { sph = make_sphere(float3( -r, 0, -1),r,create_material(0, float3(0, 0, 1)));
                 }
                 if (i == 1) { sph = make_sphere(float3( r, 0, -1),r,create_material(0, float3(1, 0, 0)));
-                }
-                /*if (i == 0) { sph = make_sphere(float3( 0, 0, -1),0.5,create_material(0, float3(0.8, 0.3, 0.3)));
+                }*/
+                if (i == 0) { sph = make_sphere(float3( 0, 0, -1),0.5,create_material(0, float3(0.8, 0.3, 0.3)));
                 }
                 if (i == 4) { sph = make_sphere(float3( 0, -100.5, -1),100,create_material(0, float3(0.8, 0.8, 0.0)));
                 }
                 if (i == 1) { sph = make_sphere(float3( 1, 0, -1),0.5,create_material(1, float3(0.8, 0.6, 0.2),0.3));
                 }
-                if (i == 2) { sph = make_sphere(float3( -1, 0, -1),0.5,create_material(2, float3(0.8, 0.8, 0.8),1.5));}*/
+                if (i == 2) { sph = make_sphere(float3( -1, 0, -1),0.5,create_material(2, float3(0.8, 0.8, 0.8),1.5));}
                 return sph;
             }
             
@@ -141,12 +141,12 @@ Shader "Unlit/SingleColor"
             {
                 int ns = 100;
                 float3 col = float3(0.0,0.0,0.0);
-                camera cam = make_camera();
+                camera camera = cam(float3(-2,2,1),float3(0,0,-1),float3(0,1,0),90,float(3000)/float(2000));
                 for(int s = 0;s<ns;s++)
                 {
                     float u = c.uv.x + hash13(float3(s,ns,c.uv.x))/3000;
                     float v = c.uv.y + hash13(float3(ns,s,c.uv.y))/2000;
-                    ray r = cam.get_rey(u,v);
+                    ray r = camera.get_rey(u,v);
                     float3 p = r.point_at_parameter(2.0);
                     col += color(r);
                 }
