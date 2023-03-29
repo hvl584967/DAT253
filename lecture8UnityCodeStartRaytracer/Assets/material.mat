@@ -79,10 +79,15 @@ Material:
     - _boolchooser: 0
     - _floatchooser: 0.505
     - bl: 2
+    - move_sphere_x: 0
+    - number_of_bounces: 7
+    - rays_per_pixel: 15
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _Cowlor: {r: 1, g: 0, b: 0, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _colorchooser: {r: 1, g: 0, b: 0, a: 1}
     - _vec4chooser: {r: 0, g: 0, b: 0, a: 0}
+    - look_at: {r: 1, g: 1, b: 1, a: 1}
+    - look_from: {r: 0, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []

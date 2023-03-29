@@ -57,22 +57,20 @@ Shader "Unlit/SingleColor"
                 float discrimination = b*b - 4*a*c;
                 if(discrimination < 0)
                 {
-                    return -1;
+                    return -1.0;
                 }
                 
-                return (-b - sqrt(discrimination)) / (2*a);
+                return (-b - sqrt(discrimination)) / (2.0*a);
             }
 
             sphere getsphere(int i)
             {
                 sphere sph;
-                if (i == 0) { sph = make_sphere(float3( 0, 0, -1),0.5,create_material(0, float3(0.8, 0.3, 0.3)));
-                }
-                if (i == 4) { sph = make_sphere(float3( 0, -100.5, -1),100,create_material(0, float3(0.8, 0.8, 0.0)));
-                }
-                if (i == 1) { sph = make_sphere(float3( 1, 0, -1),0.5,create_material(1, float3(0.8, 0.6, 0.2),0.3));
-                }
-                if (i == 2) { sph = make_sphere(float3( -1, 0, -1),0.5,create_material(2, float3(0.8, 0.8, 0.8),1.5));}
+                if (i == 0) { sph = make_sphere(float3( 0, 0, -1),0.5,create_material(0, float3(0.8, 0.3, 0.3)));}
+                if (i == 1) { sph = make_sphere(float3( 0, -100.5, -1),100,create_material(0, float3(0.8, 0.8, 0.0)));}
+                if (i == 2) { sph = make_sphere(float3( 1, 0, -1),0.5,create_material(1, float3(0.8, 0.6, 0.2),0.3));}
+                if (i == 3) { sph = make_sphere(float3( -1, 0, -1),0.5,create_material(2, float3(0.8, 0.8, 0.8),1.5));}
+                if (i == 4) { sph = make_sphere(float3( -1, 0, -1),-0.45,create_material(2, float3(0.8, 0.8, 0.8),1.5));}
                 return sph;
             }
             
@@ -85,15 +83,18 @@ Shader "Unlit/SingleColor"
             bool hit(ray r, float t_min, float t_max,out hit_record rec)
             {
                 hit_record temp_rec;
+                bool hit_anything = false;
+                float closest_so_far = t_max;
                 for(int i = 0; i<5;i++)
                 {
-                    if(getsphere(i).sphere_hit(r,t_min,t_max,temp_rec))
+                    if(getsphere(i).sphere_hit(r,t_min,closest_so_far,temp_rec))
                     {
+                        hit_anything = true;
+                        closest_so_far = temp_rec.t;
                         rec = temp_rec;
-                        return true;
                     }
                 }
-                return false;
+                return hit_anything;
             }
 
             float3 color(ray r)
@@ -101,7 +102,7 @@ Shader "Unlit/SingleColor"
                 float tmax = FLOAT_MAX;
                 hit_record rec;
                 float3 col = float3(1,1,1);
-                float max = 7;
+                float max = 20;
                 bool hit_world = hit(r,0.001,tmax,rec);
                 if(hit_world)
                 {
@@ -141,7 +142,6 @@ Shader "Unlit/SingleColor"
                     float u = c.uv.x + hash13(float3(s,ns,c.uv.x))/3000;
                     float v = c.uv.y + hash13(float3(ns,s,c.uv.y))/2000;
                     ray r = cam.get_rey(u,v);
-                    float3 p = r.point_at_parameter(2.0);
                     col += color(r);
                 }
                 

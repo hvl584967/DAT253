@@ -17,7 +17,7 @@ hit_record make_record()
     rec.t  = 0.0;
     rec.p = float3(0,0,0);
     rec.normal = float3(0,0,0);
-    material mat;
+    material mat = create_material(0,float3(0,0,0));
     rec.mat = mat;
     return rec;
 }

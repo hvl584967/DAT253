@@ -86,15 +86,18 @@ Shader "Unlit/SingleColor"
             bool hit(ray r, float t_min, float t_max,out hit_record rec)
             {
                 hit_record temp_rec;
-                for(int i = 0; i<4;i++)
+                bool hit_anything = false;
+                float closest_so_far = t_max;
+                for(int i = 0; i<5;i++)
                 {
-                    if(getsphere(i).sphere_hit(r,t_min,t_max,temp_rec))
+                    if(getsphere(i).sphere_hit(r,t_min,closest_so_far,temp_rec))
                     {
+                        hit_anything = true;
+                        closest_so_far = temp_rec.t;
                         rec = temp_rec;
-                        return true;
                     }
                 }
-                return false;
+                return hit_anything;
             }
 
             float3 color(ray r)

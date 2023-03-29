@@ -46,11 +46,6 @@ Shader "Unlit/SingleColor"
                 return o;
             }
 
-            float3 unit_vector(float3 v)
-            {
-                return v / length(v);
-            }
-
             float hit_sphere(float3 center, float radius, ray r)
             {
                 float3 oc = r.origin() - center;

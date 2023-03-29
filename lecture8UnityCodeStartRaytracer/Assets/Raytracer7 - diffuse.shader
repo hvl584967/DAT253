@@ -85,22 +85,25 @@ Shader "Unlit/SingleColor"
 
             bool hit(ray r, float t_min, float t_max,out hit_record rec)
             {
-                hit_record temp_rec;
+                hit_record temp_rec = make_record();
+                bool hit_anything = false;
+                float closest_so_far = t_max;
                 for(int i = 0; i<2;i++)
                 {
-                    if(getsphere(i).sphere_hit(r,t_min,t_max,temp_rec))
+                    if(getsphere(i).sphere_hit(r,t_min,closest_so_far,temp_rec))
                     {
+                        hit_anything = true;
+                        closest_so_far = temp_rec.t;
                         rec = temp_rec;
-                        return true;
                     }
                 }
-                return false;
+                return hit_anything;
             }
 
-            float3 color(ray r,float3 rnd)
+            float3 color(ray r)
             {
                 float tmax = FLOAT_MAX;
-                hit_record rec;
+                hit_record rec = make_record();
                 float3 unit_direction = unit_vector(r.direction());
                 float t = 0.5*(unit_direction.y +1.0);
                 float3 col = (1.0-t)*1.0 + t*float3(0.5,0.7,1);
@@ -135,7 +138,7 @@ Shader "Unlit/SingleColor"
                     float v = c.uv.y + hash13(float3(ns,s,c.uv.y))/2000;
                     ray r = cam.get_rey(u,v);
                     float3 p = r.point_at_parameter(2.0);
-                    col += color(r,hash33(float3(c.vertex.x,c.vertex.y,c.uv.x)));
+                    col += color(r);
                 }
                 
                 col /= float(ns);

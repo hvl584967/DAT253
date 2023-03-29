@@ -13,6 +13,7 @@ struct sphere
 
     bool sphere_hit(ray r, float t_min,float t_max,out hit_record rec)
     {
+        rec = make_record();
         float3 oc = r.origin() - center;
         float a = dot(r.direction(),r.direction());
         float b = 2.0*dot(oc,r.direction());

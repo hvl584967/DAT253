@@ -81,12 +81,12 @@ Shader "Unlit/SingleColor"
             float3 color(ray r)
             {
                 float max = FLOAT_MAX;
-                hit_record recs[2];
+                hit_record rec;
                 for (int i = 0; i < 2; i++)
                 {
-                    if(getsphere(i).sphere_hit(r,0.0,max,recs[i]))
+                    if(getsphere(i).sphere_hit(r,0.0,max,rec))
                     {
-                        return 0.5*float3(recs[i].normal.x+1,recs[i].normal.y+1,recs[i].normal.z+1);
+                        return 0.5*float3(rec.normal.x+1,rec.normal.y+1,rec.normal.z+1);
                     }
                 }
                 

@@ -8,6 +8,16 @@
 
 Shader "Unlit/SingleColor"
 {
+    Properties
+	{
+	// inputs from gui, NB remember to also define them in "redeclaring" section
+	_x_axis("Move sphere along x axis", Range(-5,5)) = 0.0
+	_rays_per_pixel("Nmbr of rays per pxl", Range(0,1000)) = 100
+	_max_bounces("Max nmbr of bounces", Range(0,1000)) = 20
+	_refrac("Refrac idx of glass", Range(-5,5)) = 1.5
+	_camera_origin("Camera position origin", Vector) = (0,0,0)
+
+	}
     SubShader
     {
         Pass
@@ -27,6 +37,12 @@ Shader "Unlit/SingleColor"
             #include "UnityCG.cginc"
             typedef vector <float, 3> vec3; // to get more similar code to book
             typedef vector <fixed, 3> col3;
+
+            float _x_axis;
+		    float _rays_per_pixel;
+		    float _max_bounces;
+		    float _refrac;
+		    float3 _camera_origin;
 
             struct appdata
             {
@@ -72,13 +88,11 @@ Shader "Unlit/SingleColor"
                 }
                 if (i == 1) { sph = make_sphere(float3( r, 0, -1),r,create_material(0, float3(1, 0, 0)));
                 }*/
-                if (i == 0) { sph = make_sphere(float3( 0, 0, -1),0.5,create_material(0, float3(0.8, 0.3, 0.3)));
-                }
-                if (i == 4) { sph = make_sphere(float3( 0, -100.5, -1),100,create_material(0, float3(0.8, 0.8, 0.0)));
-                }
-                if (i == 1) { sph = make_sphere(float3( 1, 0, -1),0.5,create_material(1, float3(0.8, 0.6, 0.2),0.3));
-                }
-                if (i == 2) { sph = make_sphere(float3( -1, 0, -1),0.5,create_material(2, float3(0.8, 0.8, 0.8),1.5));}
+                if (i == 0) { sph = make_sphere(float3( _x_axis, 0, -1),0.5,create_material(0, float3(0.8, 0.3, 0.3)));}
+                if (i == 1) { sph = make_sphere(float3( 0, -100.5, -1),100,create_material(0, float3(0.8, 0.8, 0.0)));}
+                if (i == 2) { sph = make_sphere(float3( 1, 0, -1),0.5,create_material(1, float3(0.8, 0.6, 0.2),0.3));}
+                if (i == 3) { sph = make_sphere(float3( -1, 0, -1),0.5,create_material(2, float3(0.8, 0.8, 0.8),_refrac));}
+                if (i == 4) { sph = make_sphere(float3( -1, 0, -1),-0.45,create_material(2, float3(0.8, 0.8, 0.8),1.5));}
                 return sph;
             }
             
@@ -91,15 +105,18 @@ Shader "Unlit/SingleColor"
             bool hit(ray r, float t_min, float t_max,out hit_record rec)
             {
                 hit_record temp_rec;
+                bool hit_anything = false;
+                float closest_so_far = t_max;
                 for(int i = 0; i<5;i++)
                 {
-                    if(getsphere(i).sphere_hit(r,t_min,t_max,temp_rec))
+                    if(getsphere(i).sphere_hit(r,t_min,closest_so_far,temp_rec))
                     {
+                        hit_anything = true;
+                        closest_so_far = temp_rec.t;
                         rec = temp_rec;
-                        return true;
                     }
                 }
-                return false;
+                return hit_anything;
             }
 
             float3 color(ray r)
@@ -107,7 +124,7 @@ Shader "Unlit/SingleColor"
                 float tmax = FLOAT_MAX;
                 hit_record rec;
                 float3 col = float3(1,1,1);
-                float max = 7;
+                float max = _max_bounces;
                 bool hit_world = hit(r,0.001,tmax,rec);
                 if(hit_world)
                 {
@@ -139,9 +156,9 @@ Shader "Unlit/SingleColor"
             ////////////////////////////////////////////////////////////////////////////////////////////////////////
             fixed4 frag(v2f c) : SV_Target
             {
-                int ns = 100;
+                int ns = _rays_per_pixel;
                 float3 col = float3(0.0,0.0,0.0);
-                camera camera = cam(float3(-2,2,1),float3(0,0,-1),float3(0,1,0),90,float(3000)/float(2000));
+                camera camera = cam(_camera_origin,float3(0,0,-1),float3(0,1,0),90,float(3000)/float(2000));
                 for(int s = 0;s<ns;s++)
                 {
                     float u = c.uv.x + hash13(float3(s,ns,c.uv.x))/3000;
